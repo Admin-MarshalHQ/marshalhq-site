@@ -440,16 +440,7 @@ export default function LandingPage() {
   );
 }
 export default LandingPage;
-```
 
-Wait — the artifact already has `export default` on the function. So just paste the full code as-is. Commit it.
-
----
-
-**3c) Check your file structure**
-
-Your repo should now look like this:
-```
 marshalhq-site/
 ├── README.md
 ├── index.html
@@ -458,3 +449,4 @@ marshalhq-site/
 └── src/
     ├── main.jsx
     └── App.jsx
+}
