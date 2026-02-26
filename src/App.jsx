@@ -51,13 +51,36 @@ export default function LandingPage() {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const formRef = useRef(null);
 
   const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!email || !role) return;
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("https://formspree.io/f/xwvnydov", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          role: role,
+          location: location,
+        }),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    }
+    setSubmitting(false);
   };
 
   const Section = ({ children, style = {}, id }) => (
@@ -368,8 +391,14 @@ export default function LandingPage() {
                     <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. London, Manchester, Bristol" style={{ width: "100%", padding: "13px 16px", background: C.s3, border: `1px solid ${C.b1}`, borderRadius: 12, color: C.t1, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box" }} />
                   </div>
 
-                  <button className="cta-btn" onClick={handleSubmit} disabled={!email || !role} style={{ width: "100%", padding: "16px", background: !email || !role ? C.b1 : `linear-gradient(135deg,${C.accent},${C.accentD})`, color: "#fff", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: !email || !role ? "not-allowed" : "pointer", boxShadow: email && role ? `0 4px 20px ${C.accent}44` : "none" }}>
-                    Join the Waitlist
+                  {error && (
+                    <div style={{ padding: "10px 14px", background: `${C.red}15`, border: `1px solid ${C.red}33`, borderRadius: 10, marginBottom: 14, fontSize: 13, color: C.red, textAlign: "center" }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <button className="cta-btn" onClick={handleSubmit} disabled={!email || !role || submitting} style={{ width: "100%", padding: "16px", background: !email || !role ? C.b1 : `linear-gradient(135deg,${C.accent},${C.accentD})`, color: "#fff", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: !email || !role || submitting ? "not-allowed" : "pointer", boxShadow: email && role ? `0 4px 20px ${C.accent}44` : "none", opacity: submitting ? 0.7 : 1 }}>
+                    {submitting ? "Submitting..." : "Join the Waitlist"}
                   </button>
 
                   <div style={{ textAlign: "center", marginTop: 14 }}>
