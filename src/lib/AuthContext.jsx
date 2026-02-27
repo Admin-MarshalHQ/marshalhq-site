@@ -8,44 +8,79 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId) => {
-    const { data } = await supabase
+  const fetchProfile = async (authUser) => {
+    // authUser can be a userId string or a full user object
+    const userId = typeof authUser === "string" ? authUser : authUser?.id;
+    if (!userId) return;
+
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
-    setProfile(data);
+
+    if (data) {
+      setProfile(data);
+      return;
+    }
+
+    // Profile doesn't exist — auto-create from user metadata
+    console.warn("Profile not found, creating one...", error?.message);
+    const fullUser = typeof authUser === "object" ? authUser : null;
+    const meta = fullUser?.user_metadata || {};
+
+    const { data: newProfile, error: insertError } = await supabase
+      .from("profiles")
+      .insert({
+        id: userId,
+        role: meta.role || "marshal",
+        full_name: meta.full_name || fullUser?.email || "",
+      })
+      .select()
+      .single();
+
+    if (newProfile) {
+      setProfile(newProfile);
+    } else {
+      console.error("Failed to create profile:", insertError?.message);
+      // Set a minimal fallback so the app doesn't get stuck
+      setProfile({
+        id: userId,
+        role: meta.role || "marshal",
+        full_name: meta.full_name || "",
+      });
+    }
   };
 
   useEffect(() => {
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        await fetchProfile(currentUser);
       }
       setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        await fetchProfile(currentUser);
+      } else {
+        setProfile(null);
       }
-    );
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email, password, role, fullName) => {
-    // Role and name are passed as metadata — a database trigger
-    // automatically creates the profile row on signup
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -56,7 +91,7 @@ export function AuthProvider({ children }) {
     if (error) return { error };
 
     if (data.user) {
-      await fetchProfile(data.user.id);
+      await fetchProfile(data.user);
     }
 
     return { data };
@@ -72,9 +107,9 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
+    await supabase.auth.signOut();
   };
 
   return (
