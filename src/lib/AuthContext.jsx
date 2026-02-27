@@ -44,17 +44,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signUp = async (email, password, role, fullName) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Role and name are passed as metadata — a database trigger
+    // automatically creates the profile row on signup
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role, full_name: fullName },
+      },
+    });
     if (error) return { error };
 
-    // Create profile row
     if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: data.user.id,
-        role,
-        full_name: fullName,
-      });
-      if (profileError) return { error: profileError };
       await fetchProfile(data.user.id);
     }
 
