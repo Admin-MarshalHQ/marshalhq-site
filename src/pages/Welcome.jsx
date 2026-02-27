@@ -5,7 +5,7 @@ export default function Welcome() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         background: C.bg,
         display: "flex",
         flexDirection: "column",

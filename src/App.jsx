@@ -24,12 +24,14 @@ function AppLayout({ children }) {
         color: C.t1,
         fontFamily: FONT,
         overflowX: "hidden",
-        minHeight: "100vh",
+        minHeight: "100dvh",
       }}
     >
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
-        html{scroll-behavior:smooth}
+        html{scroll-behavior:smooth;overscroll-behavior:none}
+        html,body{min-height:100vh;min-height:100dvh}
+        @supports not (min-height:100dvh){html,body{min-height:100vh}}
         ::selection{background:#6366f1;color:#fff}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         .cta-btn{transition:all .2s !important}

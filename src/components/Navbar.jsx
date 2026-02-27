@@ -23,7 +23,9 @@ export default function Navbar() {
         zIndex: 100,
         background: "#050508dd",
         backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid #22223044",
+        paddingTop: "env(safe-area-inset-top)",
       }}
     >
       <div

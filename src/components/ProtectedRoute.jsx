@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children, role }) {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
           background: C.bg,
           display: "flex",
           alignItems: "center",
@@ -35,7 +35,7 @@ export default function ProtectedRoute({ children, role }) {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
           background: C.bg,
           display: "flex",
           alignItems: "center",
