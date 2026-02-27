@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./lib/AuthContext";
 import { C, FONT } from "./lib/theme";
 import GatePage from "./pages/GatePage";
+import Welcome from "./pages/Welcome";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import MarshalDashboard from "./pages/marshal/Dashboard";
@@ -75,8 +76,9 @@ function DevGate({ children }) {
 export default function App() {
   return (
     <Routes>
-      {/* Public route — anyone can see this */}
-      <Route path="/" element={<PublicLanding />} />
+      {/* Public routes — anyone can see these */}
+      <Route path="/" element={<AppLayout><Welcome /></AppLayout>} />
+      <Route path="/join" element={<PublicLanding />} />
 
       {/* All app routes — behind dev password + auth */}
       <Route

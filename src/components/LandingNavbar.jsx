@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { C } from "../lib/theme";
 
 export default function LandingNavbar() {
@@ -24,7 +25,8 @@ export default function LandingNavbar() {
           justifyContent: "space-between",
         }}
       >
-        <div
+        <Link
+          to="/"
           style={{
             fontSize: 22,
             fontWeight: 900,
@@ -32,10 +34,11 @@ export default function LandingNavbar() {
             background: "linear-gradient(135deg,#6366f1,#818cf8)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            textDecoration: "none",
           }}
         >
           MarshalHQ
-        </div>
+        </Link>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <a
             href="#how"
