@@ -31,28 +31,35 @@ export default function Login() {
     setError(null);
     setLoading(true);
 
-    if (mode === "signup") {
-      if (!role) {
-        setError("Please select your role.");
-        setLoading(false);
-        return;
-      }
-      if (!fullName.trim()) {
-        setError("Please enter your full name.");
-        setLoading(false);
-        return;
-      }
-      const { error: err } = await signUp(email, password, role, fullName.trim());
-      if (err) {
-        setError(err.message);
+    try {
+      if (mode === "signup") {
+        if (!role) {
+          setError("Please select your role.");
+          setLoading(false);
+          return;
+        }
+        if (!fullName.trim()) {
+          setError("Please enter your full name.");
+          setLoading(false);
+          return;
+        }
+        const { error: err } = await signUp(email, password, role, fullName.trim());
+        if (err) {
+          setError(err.message);
+        } else {
+          setConfirmSent(true);
+        }
       } else {
-        setConfirmSent(true);
+        const { error: err } = await signIn(email, password);
+        if (err) {
+          setError(err.message);
+        }
+        // signIn succeeded — onAuthStateChange will set user/profile
+        // and the useEffect redirect will fire
       }
-    } else {
-      const { error: err } = await signIn(email, password);
-      if (err) {
-        setError(err.message);
-      }
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError(err.message || "Something went wrong. Please try again.");
     }
 
     setLoading(false);
