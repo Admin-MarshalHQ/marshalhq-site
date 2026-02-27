@@ -30,18 +30,20 @@ const Counter = ({ end, suffix = "", prefix = "", duration = 2000 }) => {
   return <span ref={ref}>{prefix}{typeof end === "number" && end % 1 !== 0 ? count.toFixed(1) : count}{suffix}</span>;
 };
 
-const FadeIn = ({ children, delay = 0, style = {} }) => {
+const FadeIn = ({ children, delay = 0 }) => {
   const [vis, setVis] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.15 });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVis(true); obs.disconnect(); } }, { threshold: 0.15 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
   return (
-    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(30px)", transition: `all 0.6s ease ${delay}s`, ...style }}>
+    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(30px)", transition: `all 0.6s ease ${delay}s` }}>
       {children}
     </div>
+    )}
+    </>
   );
 };
 
@@ -57,7 +59,52 @@ const SectionTitle = ({ children }) => (
   <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, color: C.t1, lineHeight: 1.15, letterSpacing: -1, margin: "0 0 16px" }}>{children}</h2>
 );
 
+const ADMIN_PASSWORD = "marshalhq2026";
+
+const GatePage = ({ onUnlock }) => {
+  const [pw, setPw] = useState("");
+  const [wrong, setWrong] = useState(false);
+  const handleSubmit = () => {
+    if (pw === ADMIN_PASSWORD) {
+      onUnlock();
+    } else {
+      setWrong(true);
+      setTimeout(() => setWrong(false), 2000);
+    }
+  };
+  return (
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", padding: 20 }}>
+      <div style={{ textAlign: "center", maxWidth: 400, width: "100%" }}>
+        <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: -2, background: `linear-gradient(135deg,${C.accent},${C.accentL},#c084fc)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 8 }}>MarshalHQ</div>
+        <div style={{ fontSize: 14, color: C.t3, marginBottom: 32 }}>This site is currently in development</div>
+        <div style={{ background: C.s2, borderRadius: 20, padding: 32, border: `1px solid ${C.b1}`, textAlign: "left" }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: .5, marginBottom: 8, display: "block" }}>Enter password to continue</label>
+          <input
+            type="password"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+            placeholder="Password"
+            style={{ width: "100%", padding: "13px 16px", background: C.s3, border: `1px solid ${wrong ? C.red : C.b1}`, borderRadius: 12, color: C.t1, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box", marginBottom: 14, outline: "none", transition: "border-color 0.2s" }}
+          />
+          {wrong && (
+            <div style={{ fontSize: 13, color: C.red, marginBottom: 10, textAlign: "center" }}>Incorrect password</div>
+          )}
+          <button
+            onClick={handleSubmit}
+            style={{ width: "100%", padding: "14px", background: `linear-gradient(135deg,${C.accent},${C.accentD})`, color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${C.accent}33` }}
+          >
+            Sign In
+          </button>
+        </div>
+        <div style={{ fontSize: 12, color: C.t4, marginTop: 20 }}>Authorised access only</div>
+      </div>
+    </div>
+  );
+};
+
 export default function LandingPage() {
+  const [unlocked, setUnlocked] = useState(false);
   const [role, setRole] = useState(null);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -96,6 +143,10 @@ export default function LandingPage() {
   };
 
   return (
+    <>
+    {!unlocked ? (
+      <GatePage onUnlock={() => setUnlocked(true)} />
+    ) : (
     <div style={{ background: C.bg, color: C.t1, fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", overflowX: "hidden" }}>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
@@ -166,7 +217,6 @@ export default function LandingPage() {
                 <div style={{ fontSize: 12, color: C.t4, marginTop: 4, maxWidth: 160 }}>Platforms built for marshals</div>
               </div>
             </div>
-          </FadeIn>
         </Section>
       </div>
 
@@ -339,7 +389,6 @@ export default function LandingPage() {
 
       <div ref={formRef}>
         <Section style={{ paddingTop: 80, paddingBottom: 100 }}>
-          <FadeIn>
             <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
               <SectionLabel>Early Access</SectionLabel>
               <SectionTitle>Be first in line</SectionTitle>
