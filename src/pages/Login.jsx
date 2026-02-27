@@ -50,16 +50,13 @@ export default function Login() {
           setConfirmSent(true);
         }
       } else {
-        setError("DEBUG: calling signIn...");
         const result = await signIn(email, password);
         if (result.error) {
-          setError("Login failed: " + result.error.message);
-        } else {
-          setError("DEBUG: signIn OK, waiting for redirect...");
+          setError(result.error.message);
         }
       }
     } catch (err) {
-      setError("CAUGHT ERROR: " + (err.message || String(err)));
+      setError(err.message || "Something went wrong. Please try again.");
     }
 
     setLoading(false);

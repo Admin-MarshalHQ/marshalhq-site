@@ -98,12 +98,38 @@ export function AuthProvider({ children }) {
   };
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Call auth API directly to avoid navigator.locks hanging in Codespace
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    const res = await fetch(
+      `${supabaseUrl}/auth/v1/token?grant_type=password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseKey,
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      return {
+        error: { message: json.error_description || json.msg || "Login failed" },
+      };
+    }
+
+    // Set the session in the Supabase client
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: json.access_token,
+      refresh_token: json.refresh_token,
     });
-    if (error) return { error };
-    return { data };
+
+    if (sessionError) return { error: sessionError };
+    return { data: json };
   };
 
   const signOut = async () => {
