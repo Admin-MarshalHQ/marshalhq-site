@@ -65,6 +65,20 @@ export default function Navbar() {
               >
                 Dashboard
               </Link>
+              {profile?.role === "marshal" && (
+                <Link
+                  to="/marshal/profile"
+                  style={{
+                    color: C.t3,
+                    textDecoration: "none",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    padding: "6px 12px",
+                  }}
+                >
+                  Profile
+                </Link>
+              )}
               <button
                 onClick={handleSignOut}
                 style={{
