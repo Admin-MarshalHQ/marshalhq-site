@@ -7,6 +7,9 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import MarshalDashboard from "./pages/marshal/Dashboard";
 import ManagerDashboard from "./pages/manager/Dashboard";
+import PostJob from "./pages/manager/PostJob";
+import JobApplicants from "./pages/manager/JobApplicants";
+import JobDetail from "./pages/JobDetail";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -81,6 +84,30 @@ export default function App() {
             element={
               <ProtectedRoute role="manager">
                 <ManagerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/post"
+            element={
+              <ProtectedRoute role="manager">
+                <PostJob />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/job/:id"
+            element={
+              <ProtectedRoute role="manager">
+                <JobApplicants />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/job/:id"
+            element={
+              <ProtectedRoute>
+                <JobDetail />
               </ProtectedRoute>
             }
           />
