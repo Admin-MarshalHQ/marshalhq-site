@@ -10,6 +10,7 @@ import ManagerDashboard from "./pages/manager/Dashboard";
 import PostJob from "./pages/manager/PostJob";
 import JobApplicants from "./pages/manager/JobApplicants";
 import JobDetail from "./pages/JobDetail";
+import LandingNavbar from "./components/LandingNavbar";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -40,79 +41,97 @@ function AppLayout({ children }) {
   );
 }
 
-function LandingWithNav() {
+// Public landing page — no login links, just the waitlist
+function PublicLanding() {
   return (
-    <>
-      <Navbar />
+    <AppLayout>
+      <LandingNavbar />
       <Landing />
-    </>
+    </AppLayout>
   );
 }
 
-export default function App() {
+// Dev password gate wrapping all app routes
+function DevGate({ children }) {
   const [unlocked, setUnlocked] = useState(
-    () => localStorage.getItem("mhq_unlocked") === "true"
+    () => localStorage.getItem("mhq_dev") === "true"
   );
 
   if (!unlocked) {
     return (
       <GatePage
         onUnlock={() => {
-          localStorage.setItem("mhq_unlocked", "true");
+          localStorage.setItem("mhq_dev", "true");
           setUnlocked(true);
         }}
       />
     );
   }
 
+  return children;
+}
+
+export default function App() {
   return (
-    <AuthProvider>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<LandingWithNav />} />
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/marshal/dashboard"
-            element={
-              <ProtectedRoute role="marshal">
-                <MarshalDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/dashboard"
-            element={
-              <ProtectedRoute role="manager">
-                <ManagerDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/post"
-            element={
-              <ProtectedRoute role="manager">
-                <PostJob />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/manager/job/:id"
-            element={
-              <ProtectedRoute role="manager">
-                <JobApplicants />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/job/:id"
-            element={
-              <ProtectedRoute>
-                <JobDetail />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AppLayout>
-    </AuthProvider>
+    <Routes>
+      {/* Public route — anyone can see this */}
+      <Route path="/" element={<PublicLanding />} />
+
+      {/* All app routes — behind dev password + auth */}
+      <Route
+        path="/*"
+        element={
+          <DevGate>
+            <AuthProvider>
+              <AppLayout>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route
+                    path="/marshal/dashboard"
+                    element={
+                      <ProtectedRoute role="marshal">
+                        <MarshalDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/manager/dashboard"
+                    element={
+                      <ProtectedRoute role="manager">
+                        <ManagerDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/manager/post"
+                    element={
+                      <ProtectedRoute role="manager">
+                        <PostJob />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/manager/job/:id"
+                    element={
+                      <ProtectedRoute role="manager">
+                        <JobApplicants />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/job/:id"
+                    element={
+                      <ProtectedRoute>
+                        <JobDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </AppLayout>
+            </AuthProvider>
+          </DevGate>
+        }
+      />
+    </Routes>
   );
 }

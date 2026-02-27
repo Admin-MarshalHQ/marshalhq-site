@@ -588,7 +588,7 @@ export default function Landing() {
       </div>
 
       {/* Waitlist Form */}
-      <div ref={formRef}>
+      <div ref={formRef} id="waitlist">
         <Section style={{ paddingTop: 80, paddingBottom: 100 }}>
           <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
             <SectionLabel>Early Access</SectionLabel>
