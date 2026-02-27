@@ -22,24 +22,31 @@ export default function MarshalDashboard() {
     if (!user) return;
     setLoading(true);
 
-    // Fetch live jobs
-    const { data: jobData } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("status", "live")
-      .order("is_urgent", { ascending: false })
-      .order("created_at", { ascending: false });
+    try {
+      // Fetch live jobs
+      const { data: jobData, error: jobError } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("status", "live")
+        .order("is_urgent", { ascending: false })
+        .order("created_at", { ascending: false });
 
-    setJobs(jobData || []);
+      if (jobError) console.error("Error fetching jobs:", jobError.message);
+      setJobs(jobData || []);
 
-    // Fetch my applications with job data
-    const { data: appData } = await supabase
-      .from("applications")
-      .select("*, jobs(*)")
-      .eq("applicant_id", user.id)
-      .order("applied_at", { ascending: false });
+      // Fetch my applications with job data
+      const { data: appData, error: appError } = await supabase
+        .from("applications")
+        .select("*, jobs(*)")
+        .eq("applicant_id", user.id)
+        .order("applied_at", { ascending: false });
 
-    setMyApps(appData || []);
+      if (appError) console.error("Error fetching applications:", appError.message);
+      setMyApps(appData || []);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    }
+
     setLoading(false);
   };
 

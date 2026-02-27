@@ -20,13 +20,19 @@ export default function ManagerDashboard() {
     if (!user) return;
     setLoading(true);
 
-    const { data } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("posted_by", user.id)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("posted_by", user.id)
+        .order("created_at", { ascending: false });
 
-    setJobs(data || []);
+      if (error) console.error("Error fetching jobs:", error.message);
+      setJobs(data || []);
+    } catch (err) {
+      console.error("Manager dashboard fetch error:", err);
+    }
+
     setLoading(false);
   };
 

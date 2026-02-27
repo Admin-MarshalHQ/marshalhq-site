@@ -32,6 +32,12 @@ export default function Login() {
     setLoading(true);
 
     try {
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setLoading(false);
+        return;
+      }
+
       if (mode === "signup") {
         if (!role) {
           setError("Please select your role.");

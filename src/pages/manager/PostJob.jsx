@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { C, FONT } from "../../lib/theme";
+import { C } from "../../lib/theme";
 import { useAuth } from "../../lib/AuthContext";
 import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
@@ -57,6 +57,11 @@ export default function PostJob() {
 
     if (!form.title || !form.location || !form.date || !form.day_rate) {
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (form.start_time && form.end_time && form.end_time <= form.start_time) {
+      setError("End time must be after start time.");
       return;
     }
 

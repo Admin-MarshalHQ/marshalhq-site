@@ -88,6 +88,12 @@ export default function MarshalProfile() {
     setError(null);
     setSaved(false);
 
+    if (form.day_rate_min > form.day_rate_max) {
+      setError("Minimum day rate cannot be higher than maximum day rate.");
+      setSaving(false);
+      return;
+    }
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update(form)

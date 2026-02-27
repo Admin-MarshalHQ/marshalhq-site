@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { C, FONT } from "../lib/theme";
 
-const ADMIN_PASSWORD = "marshalhq2026";
+const ADMIN_PASSWORD = import.meta.env.VITE_DEV_PASSWORD || "marshalhq2026";
 
 export default function GatePage({ onUnlock }) {
   const [pw, setPw] = useState("");

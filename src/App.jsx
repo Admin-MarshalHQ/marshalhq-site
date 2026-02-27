@@ -11,8 +11,8 @@ import PostJob from "./pages/manager/PostJob";
 import JobApplicants from "./pages/manager/JobApplicants";
 import JobDetail from "./pages/JobDetail";
 import MarshalProfile from "./pages/marshal/Profile";
+import NotFound from "./pages/NotFound";
 import LandingNavbar from "./components/LandingNavbar";
-import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppLayout({ children }) {
@@ -135,6 +135,7 @@ export default function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </AppLayout>
             </AuthProvider>

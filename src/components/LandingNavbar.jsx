@@ -1,6 +1,6 @@
 import { C } from "../lib/theme";
 
-export default function LandingNavbar({ scrollToForm }) {
+export default function LandingNavbar() {
   return (
     <nav
       style={{

@@ -21,33 +21,56 @@ export default function JobApplicants() {
   const fetchData = async () => {
     setLoading(true);
 
-    // Fetch job
-    const { data: jobData } = await supabase
-      .from("jobs")
-      .select("*")
-      .eq("id", id)
-      .eq("posted_by", user.id)
-      .single();
+    try {
+      // Fetch job
+      const { data: jobData, error: jobError } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("id", id)
+        .eq("posted_by", user.id)
+        .single();
 
-    if (!jobData) {
-      setLoading(false);
-      return;
+      if (jobError || !jobData) {
+        console.error("Error fetching job:", jobError?.message);
+        setLoading(false);
+        return;
+      }
+      setJob(jobData);
+
+      // Fetch applications with applicant profiles
+      const { data: apps, error: appsError } = await supabase
+        .from("applications")
+        .select("*, profiles:applicant_id(full_name, location, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
+        .eq("job_id", id)
+        .order("applied_at", { ascending: true });
+
+      if (appsError) console.error("Error fetching applicants:", appsError.message);
+      setApplicants(apps || []);
+    } catch (err) {
+      console.error("Job applicants fetch error:", err);
     }
-    setJob(jobData);
 
-    // Fetch applications with applicant profiles
-    const { data: apps } = await supabase
-      .from("applications")
-      .select("*, profiles:applicant_id(full_name, location, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
-      .eq("job_id", id)
-      .order("applied_at", { ascending: true });
-
-    setApplicants(apps || []);
     setLoading(false);
   };
 
   const updateStatus = async (applicationId, newStatus) => {
     setUpdating(applicationId);
+
+    // Re-fetch job to get latest slots_filled (prevents race condition)
+    if (newStatus === "accepted") {
+      const { data: freshJob } = await supabase
+        .from("jobs")
+        .select("slots_filled, slots_needed")
+        .eq("id", id)
+        .single();
+
+      if (freshJob && freshJob.slots_filled >= freshJob.slots_needed) {
+        setUpdating(null);
+        alert("All slots have already been filled.");
+        await fetchData(); // refresh to show updated state
+        return;
+      }
+    }
 
     const { error } = await supabase
       .from("applications")
@@ -62,11 +85,12 @@ export default function JobApplicants() {
 
       // If accepting, increment slots_filled
       if (newStatus === "accepted") {
+        const newFilled = (job.slots_filled || 0) + 1;
         await supabase
           .from("jobs")
-          .update({ slots_filled: (job.slots_filled || 0) + 1 })
+          .update({ slots_filled: newFilled })
           .eq("id", id);
-        setJob((prev) => ({ ...prev, slots_filled: (prev.slots_filled || 0) + 1 }));
+        setJob((prev) => ({ ...prev, slots_filled: newFilled }));
       }
     }
 
