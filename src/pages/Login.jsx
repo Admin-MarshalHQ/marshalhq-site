@@ -50,16 +50,16 @@ export default function Login() {
           setConfirmSent(true);
         }
       } else {
-        const { error: err } = await signIn(email, password);
-        if (err) {
-          setError(err.message);
+        setError("DEBUG: calling signIn...");
+        const result = await signIn(email, password);
+        if (result.error) {
+          setError("Login failed: " + result.error.message);
+        } else {
+          setError("DEBUG: signIn OK, waiting for redirect...");
         }
-        // signIn succeeded — onAuthStateChange will set user/profile
-        // and the useEffect redirect will fire
       }
     } catch (err) {
-      console.error("Auth error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+      setError("CAUGHT ERROR: " + (err.message || String(err)));
     }
 
     setLoading(false);
