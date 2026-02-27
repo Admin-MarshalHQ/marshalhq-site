@@ -17,6 +17,10 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
       storageKey: "mhq-auth",
+      // Bypass navigator.locks which hangs in Codespace/iframe environments
+      lock: async (_name, _acquireTimeout, fn) => {
+        return await fn();
+      },
     },
   }
 );
