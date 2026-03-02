@@ -61,7 +61,6 @@ export default function Landing() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 8,
                 background: "#6366f115",
                 border: "1px solid #6366f133",
                 borderRadius: 50,
@@ -70,32 +69,24 @@ export default function Landing() {
                 fontSize: 13,
                 color: C.accentL,
                 fontWeight: 600,
+                letterSpacing: 0.5,
               }}
             >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: C.green,
-                  animation: "pulse 2s infinite",
-                }}
-              />
-              Now accepting early access signups
+              Early Access &mdash; Now Open
             </div>
           </FadeIn>
-          <FadeIn delay={0.1}>
+          <FadeIn delay={0.05}>
             <h1
               style={{
                 fontSize: "clamp(36px, 6vw, 68px)",
-                fontWeight: 900,
+                fontWeight: 800,
                 lineHeight: 1.05,
                 letterSpacing: -2,
                 maxWidth: 800,
                 margin: "0 auto 20px",
               }}
             >
-              Stop scrolling WhatsApp.
+              The professional way to
               <br />
               <span
                 style={{
@@ -104,11 +95,11 @@ export default function Landing() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Start getting booked.
+                hire location marshals.
               </span>
             </h1>
           </FadeIn>
-          <FadeIn delay={0.2}>
+          <FadeIn delay={0.1}>
             <p
               style={{
                 fontSize: "clamp(16px, 2vw, 20px)",
@@ -119,11 +110,11 @@ export default function Landing() {
                 fontWeight: 400,
               }}
             >
-              The UK's first marketplace connecting location marshals with film and TV productions. Get
-              matched to jobs instantly. Build your reputation. Get paid reliably.
+              The UK's first dedicated marketplace for film and television location marshals.
+              Verified profiles. Instant matching. Reliable payments.
             </p>
           </FadeIn>
-          <FadeIn delay={0.3}>
+          <FadeIn delay={0.15}>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
               <button
                 className="cta-btn"
@@ -133,9 +124,9 @@ export default function Landing() {
                   color: "#fff",
                   border: "none",
                   padding: "16px 36px",
-                  borderRadius: 14,
+                  borderRadius: 10,
                   fontSize: 17,
-                  fontWeight: 800,
+                  fontWeight: 700,
                   cursor: "pointer",
                   boxShadow: "0 4px 20px #6366f144",
                   fontFamily: "inherit",
@@ -153,14 +144,14 @@ export default function Landing() {
                   textDecoration: "none",
                   padding: "16px 24px",
                   fontSize: 16,
-                  fontWeight: 600,
+                  fontWeight: 500,
                 }}
               >
                 See how it works
               </a>
             </div>
           </FadeIn>
-          <FadeIn delay={0.4}>
+          <FadeIn delay={0.2}>
             <div
               style={{
                 display: "flex",
@@ -171,7 +162,7 @@ export default function Landing() {
               }}
             >
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 32, fontWeight: 900, color: C.t1 }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: C.t1 }}>
                   <Counter end={6.8} suffix="bn" prefix={"\u00a3"} />
                 </div>
                 <div style={{ fontSize: 12, color: C.t4, marginTop: 4, maxWidth: 160 }}>
@@ -179,7 +170,7 @@ export default function Landing() {
                 </div>
               </div>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 32, fontWeight: 900, color: C.t1 }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: C.t1 }}>
                   <Counter end={361} suffix="+" />
                 </div>
                 <div style={{ fontSize: 12, color: C.t4, marginTop: 4, maxWidth: 160 }}>
@@ -187,7 +178,7 @@ export default function Landing() {
                 </div>
               </div>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 32, fontWeight: 900, color: C.orange }}>0</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: C.orange }}>0</div>
                 <div style={{ fontSize: 12, color: C.t4, marginTop: 4, maxWidth: 160 }}>
                   Platforms built for marshals
                 </div>
@@ -203,11 +194,11 @@ export default function Landing() {
           <FadeIn>
             <div style={{ textAlign: "center", maxWidth: 700, margin: "0 auto" }}>
               <SectionLabel>The Problem</SectionLabel>
-              <SectionTitle>The WhatsApp group model is broken</SectionTitle>
+              <SectionTitle>An industry without infrastructure</SectionTitle>
               <p style={{ fontSize: 16, color: C.t3, lineHeight: 1.7 }}>
-                Right now, hiring location marshals means posting in WhatsApp groups with hundreds of
-                people, hoping the right ones see it in time, and manually tracking who confirmed. No
-                ratings. No profiles. No accountability.
+                Location marshals are currently sourced through informal WhatsApp groups — a method
+                that offers no vetting, no profiles, no ratings, and no audit trail. MarshalHQ
+                replaces this with purpose-built infrastructure.
               </p>
             </div>
           </FadeIn>
@@ -221,39 +212,36 @@ export default function Landing() {
           >
             {[
               {
-                icon: "\ud83d\ude24",
                 title: "For Location Managers",
                 points: [
-                  "Scrolling through hundreds of messages to find 4 marshals",
-                  "No way to check ratings or reliability",
+                  "Searching through hundreds of messages to find available marshals",
+                  "No way to verify ratings or reliability before hiring",
                   "No audit trail for production accounting",
-                  "If someone no-shows, zero accountability",
+                  "No accountability when crew fail to arrive",
                 ],
               },
               {
-                icon: "\ud83d\ude29",
                 title: "For Marshals",
                 points: [
-                  "Constantly monitoring multiple WhatsApp groups",
-                  "Miss a message by 10 minutes and the job is gone",
-                  "No way to build a portable reputation",
-                  "Good work goes unrecognised",
+                  "Monitoring multiple WhatsApp groups around the clock",
+                  "A ten-minute delay can mean losing the booking",
+                  "No way to build a portable, verifiable reputation",
+                  "Consistent good work goes unrecognised",
                 ],
               },
             ].map((c, i) => (
-              <FadeIn key={i} delay={i * 0.15}>
+              <FadeIn key={i} delay={i * 0.1}>
                 <div
                   className="card-hover"
                   style={{
                     background: C.s2,
-                    borderRadius: 20,
+                    borderRadius: 16,
                     padding: 28,
                     border: "1px solid " + C.b1,
                     height: "100%",
                   }}
                 >
-                  <div style={{ fontSize: 36, marginBottom: 14 }}>{c.icon}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: C.t1, marginBottom: 14 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
                     {c.title}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -278,7 +266,7 @@ export default function Landing() {
         <FadeIn>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <SectionLabel>How It Works</SectionLabel>
-            <SectionTitle>From posting to fully crewed in minutes</SectionTitle>
+            <SectionTitle>From job posting to confirmed crew in minutes</SectionTitle>
           </div>
         </FadeIn>
         <div
@@ -291,39 +279,35 @@ export default function Landing() {
           {[
             {
               step: "01",
-              icon: "\ud83d\udcdd",
               title: "Post a Job",
               desc: "Location manager posts the job in under 60 seconds with date, location, rate and slots needed.",
               color: C.accent,
             },
             {
               step: "02",
-              icon: "\ud83d\udce1",
               title: "Instant Match",
-              desc: "Verified marshals within range get an instant push notification. No WhatsApp scrolling required.",
+              desc: "Verified marshals within range receive an instant notification. No manual outreach required.",
               color: C.accentL,
             },
             {
               step: "03",
-              icon: "\u26a1",
               title: "Apply and Book",
               desc: "Marshals apply with one tap. Managers review ratings, reliability and certs then book instantly.",
               color: C.green,
             },
             {
               step: "04",
-              icon: "\u2b50",
               title: "Rate and Repeat",
-              desc: "Both sides rate each other after the job. Build reputation. Find your go-to crew. Get rebooked.",
+              desc: "Both parties rate each other after the job. Build a verified track record and establish repeat working relationships.",
               color: C.orange,
             },
           ].map((s, i) => (
-            <FadeIn key={i} delay={i * 0.12}>
+            <FadeIn key={i} delay={i * 0.08}>
               <div
                 className="card-hover"
                 style={{
                   background: C.s2,
-                  borderRadius: 20,
+                  borderRadius: 16,
                   padding: 28,
                   border: "1px solid " + C.b1,
                   textAlign: "center",
@@ -336,13 +320,12 @@ export default function Landing() {
                     fontWeight: 800,
                     color: s.color,
                     letterSpacing: 1,
-                    marginBottom: 12,
+                    marginBottom: 16,
                   }}
                 >
                   STEP {s.step}
                 </div>
-                <div style={{ fontSize: 40, marginBottom: 14 }}>{s.icon}</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: C.t1, marginBottom: 8 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, marginBottom: 8 }}>
                   {s.title}
                 </div>
                 <p style={{ fontSize: 13, color: C.t3, lineHeight: 1.6 }}>{s.desc}</p>
@@ -358,7 +341,7 @@ export default function Landing() {
           <FadeIn>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <SectionLabel>Built for Both Sides</SectionLabel>
-              <SectionTitle>Whether you hire or get hired</SectionTitle>
+              <SectionTitle>Purpose-built for both sides of the booking</SectionTitle>
             </div>
           </FadeIn>
           <div
@@ -372,13 +355,12 @@ export default function Landing() {
               <div
                 style={{
                   background: "linear-gradient(135deg, #6366f108, #6366f103)",
-                  borderRadius: 20,
+                  borderRadius: 16,
                   padding: 32,
                   border: "1px solid #6366f122",
                 }}
               >
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{"\ud83c\udfac"}</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 16 }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
                   For Location Managers
                 </div>
                 {[
@@ -398,22 +380,21 @@ export default function Landing() {
                 ))}
               </div>
             </FadeIn>
-            <FadeIn delay={0.15}>
+            <FadeIn delay={0.1}>
               <div
                 style={{
                   background: "linear-gradient(135deg, #10b98108, #10b98103)",
-                  borderRadius: 20,
+                  borderRadius: 16,
                   padding: 32,
                   border: "1px solid #10b98122",
                 }}
               >
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{"\ud83e\uddba"}</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 16 }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
                   For Location Marshals
                 </div>
                 {[
                   "Get push notifications for jobs matching your location",
-                  "Apply with one tap instead of racing to reply in WhatsApp",
+                  "Apply with one tap instead of competing for visibility in group chats",
                   "Build a verified profile with ratings and reviews",
                   "Track your earnings and download tax summaries",
                   "Certifications displayed prominently (SIA, CSCS, First Aid)",
@@ -437,10 +418,10 @@ export default function Landing() {
         <FadeIn>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <SectionLabel>The Opportunity</SectionLabel>
-            <SectionTitle>The UK film industry has never been busier</SectionTitle>
+            <SectionTitle>A growing industry with no dedicated tooling</SectionTitle>
             <p style={{ fontSize: 16, color: C.t3, maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
-              361 productions shot in the UK in 2025. Every single one needed marshals. We are building
-              the infrastructure to connect them.
+              361 productions were filmed in the UK in 2025, each requiring location marshals.
+              MarshalHQ provides the infrastructure to connect them efficiently.
             </p>
           </div>
         </FadeIn>
@@ -461,7 +442,7 @@ export default function Landing() {
             { n: "54%", l: "Of the film workforce is freelance", sub: "Already used to digital platforms" },
             { n: "< 5 min", l: "Our target fill time", sub: "vs hours on WhatsApp groups" },
           ].map((s, i) => (
-            <FadeIn key={i} delay={i * 0.1}>
+            <FadeIn key={i} delay={i * 0.07}>
               <div
                 className="card-hover"
                 style={{
@@ -472,7 +453,7 @@ export default function Landing() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 32, fontWeight: 900, color: C.accent }}>{s.n}</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: C.accent }}>{s.n}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginTop: 6 }}>{s.l}</div>
                 <div style={{ fontSize: 11, color: C.t4, marginTop: 4 }}>{s.sub}</div>
               </div>
@@ -592,10 +573,10 @@ export default function Landing() {
         <Section style={{ paddingTop: 80, paddingBottom: 100 }}>
           <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
             <SectionLabel>Early Access</SectionLabel>
-            <SectionTitle>Be first in line</SectionTitle>
+            <SectionTitle>Register your interest</SectionTitle>
             <p style={{ fontSize: 15, color: C.t3, lineHeight: 1.6, marginBottom: 32 }}>
-              We are launching soon. Join the waitlist to get early access, zero platform fees for 3
-              months, and Founding Member status.
+              MarshalHQ is launching soon. Register for early access to receive zero platform fees
+              for three months and Founding Member status.
             </p>
 
             {submitted ? (
@@ -604,11 +585,10 @@ export default function Landing() {
                   padding: 40,
                   background: "#10b98110",
                   border: "1px solid #10b98133",
-                  borderRadius: 20,
+                  borderRadius: 16,
                 }}
               >
-                <div style={{ fontSize: 52, marginBottom: 12 }}>{"\ud83c\udfac"}</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: C.green }}>You are on the list!</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: C.green }}>Registration confirmed</div>
                 <div style={{ fontSize: 14, color: C.t3, marginTop: 10, lineHeight: 1.6 }}>
                   We will be in touch soon with early access details.
                 </div>
@@ -621,7 +601,7 @@ export default function Landing() {
                     border: "1px solid " + C.b1,
                   }}
                 >
-                  <div style={{ fontSize: 12, color: C.t4, marginBottom: 4 }}>Share with your crew:</div>
+                  <div style={{ fontSize: 12, color: C.t4, marginBottom: 4 }}>Share with colleagues:</div>
                   <div style={{ fontSize: 14, color: C.accent, fontWeight: 700 }}>marshalhq.com</div>
                 </div>
               </div>
@@ -629,7 +609,7 @@ export default function Landing() {
               <div
                 style={{
                   background: C.s2,
-                  borderRadius: 24,
+                  borderRadius: 16,
                   padding: 32,
                   border: "1px solid " + C.b1,
                   textAlign: "left",
@@ -654,19 +634,18 @@ export default function Landing() {
                       onClick={() => setRole("marshal")}
                       style={{
                         flex: 1,
-                        padding: "16px 12px",
+                        padding: "18px 12px",
                         background: role === "marshal" ? "#6366f115" : C.s3,
                         border: "2px solid " + (role === "marshal" ? C.accent : C.b1),
-                        borderRadius: 14,
+                        borderRadius: 10,
                         cursor: "pointer",
                         textAlign: "center",
                         fontFamily: "inherit",
                       }}
                     >
-                      <div style={{ fontSize: 24, marginBottom: 4 }}>{"\ud83e\uddba"}</div>
                       <div
                         style={{
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: 700,
                           color: role === "marshal" ? C.accent : C.t2,
                         }}
@@ -678,19 +657,18 @@ export default function Landing() {
                       onClick={() => setRole("manager")}
                       style={{
                         flex: 1,
-                        padding: "16px 12px",
+                        padding: "18px 12px",
                         background: role === "manager" ? "#6366f115" : C.s3,
                         border: "2px solid " + (role === "manager" ? C.accent : C.b1),
-                        borderRadius: 14,
+                        borderRadius: 10,
                         cursor: "pointer",
                         textAlign: "center",
                         fontFamily: "inherit",
                       }}
                     >
-                      <div style={{ fontSize: 24, marginBottom: 4 }}>{"\ud83c\udfac"}</div>
                       <div
                         style={{
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: 700,
                           color: role === "manager" ? C.accent : C.t2,
                         }}
@@ -724,7 +702,7 @@ export default function Landing() {
                       padding: "13px 16px",
                       background: C.s3,
                       border: "1px solid " + C.b1,
-                      borderRadius: 12,
+                      borderRadius: 8,
                       color: C.t1,
                       fontSize: 14,
                       fontFamily: "inherit",
@@ -757,7 +735,7 @@ export default function Landing() {
                       padding: "13px 16px",
                       background: C.s3,
                       border: "1px solid " + C.b1,
-                      borderRadius: 12,
+                      borderRadius: 8,
                       color: C.t1,
                       fontSize: 14,
                       fontFamily: "inherit",
@@ -789,7 +767,7 @@ export default function Landing() {
                       padding: "13px 16px",
                       background: C.s3,
                       border: "1px solid " + C.b1,
-                      borderRadius: 12,
+                      borderRadius: 8,
                       color: C.t1,
                       fontSize: 14,
                       fontFamily: "inherit",
@@ -826,9 +804,9 @@ export default function Landing() {
                       !email || !role ? C.b1 : "linear-gradient(135deg,#6366f1,#4f46e5)",
                     color: "#fff",
                     border: "none",
-                    borderRadius: 14,
+                    borderRadius: 10,
                     fontSize: 16,
-                    fontWeight: 800,
+                    fontWeight: 700,
                     cursor: !email || !role || submitting ? "not-allowed" : "pointer",
                     boxShadow: email && role ? "0 4px 20px #6366f144" : "none",
                     opacity: submitting ? 0.7 : 1,
@@ -849,7 +827,7 @@ export default function Landing() {
                       color: C.t4,
                     }}
                   >
-                    {"\ud83d\udd12"} No spam. Unsubscribe anytime.
+                    Your information is kept private. Unsubscribe anytime.
                   </div>
                 </div>
               </div>
@@ -866,7 +844,7 @@ export default function Landing() {
               <div
                 style={{
                   background: "linear-gradient(135deg, #6366f110, #818cf808)",
-                  borderRadius: 24,
+                  borderRadius: 16,
                   padding: "40px 32px",
                   border: "1px solid #6366f122",
                   textAlign: "center",
@@ -884,10 +862,10 @@ export default function Landing() {
                     marginBottom: 10,
                   }}
                 >
-                  {"\u2b50"} Founding Member Perks
+                  Founding Member Benefits
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: C.t1, marginBottom: 16 }}>
-                  Join now. Pay nothing for 3 months.
+                <div style={{ fontSize: 24, fontWeight: 800, color: C.t1, marginBottom: 16 }}>
+                  Register now. Zero platform fees for three months.
                 </div>
                 <div
                   style={{
@@ -899,14 +877,14 @@ export default function Landing() {
                   }}
                 >
                   {[
-                    { icon: "\ud83c\udff7\ufe0f", text: "Zero fees for 3 months" },
-                    { icon: "\u2b50", text: "Permanent Founding Member badge" },
-                    { icon: "\ud83d\udd14", text: "Priority access to jobs" },
-                    { icon: "\ud83d\udcac", text: "Direct input on features" },
-                  ].map((p, i) => (
+                    "Zero platform fees for three months",
+                    "Permanent Founding Member badge",
+                    "Priority access to job listings",
+                    "Direct input on product development",
+                  ].map((text, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 20 }}>{p.icon}</span>
-                      <span style={{ fontSize: 14, color: C.t2, fontWeight: 600 }}>{p.text}</span>
+                      <span style={{ fontSize: 16, color: C.accent, fontWeight: 700 }}>&mdash;</span>
+                      <span style={{ fontSize: 14, color: C.t2, fontWeight: 600 }}>{text}</span>
                     </div>
                   ))}
                 </div>
@@ -932,7 +910,7 @@ export default function Landing() {
               <div
                 style={{
                   fontSize: 18,
-                  fontWeight: 900,
+                  fontWeight: 800,
                   background: "linear-gradient(135deg,#6366f1,#818cf8)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",

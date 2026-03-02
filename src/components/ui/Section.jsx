@@ -30,7 +30,7 @@ export function SectionTitle({ children }) {
     <h2
       style={{
         fontSize: "clamp(28px, 4vw, 42px)",
-        fontWeight: 900,
+        fontWeight: 800,
         color: C.t1,
         lineHeight: 1.15,
         letterSpacing: -1,

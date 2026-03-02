@@ -37,7 +37,7 @@ function AppLayout({ children }) {
         .cta-btn{transition:all .2s !important}
         .cta-btn:hover{transform:translateY(-2px) !important;box-shadow:0 8px 30px rgba(99,102,241,.35) !important}
         .card-hover{transition:all .25s !important}
-        .card-hover:hover{border-color:#6366f144 !important;transform:translateY(-4px) !important}
+        .card-hover:hover{border-color:#6366f144 !important;transform:translateY(-2px) !important}
         input:focus{border-color:#6366f1 !important;outline:none}
       `}</style>
       {children}

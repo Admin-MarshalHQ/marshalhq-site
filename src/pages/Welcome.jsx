@@ -38,7 +38,6 @@ export default function Welcome() {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
             background: "#6366f115",
             border: "1px solid #6366f133",
             borderRadius: 50,
@@ -47,25 +46,17 @@ export default function Welcome() {
             fontSize: 13,
             color: C.accentL,
             fontWeight: 600,
+            letterSpacing: 0.5,
           }}
         >
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: C.green,
-              animation: "pulse 2s infinite",
-            }}
-          />
-          Coming Soon
+          Early Access
         </div>
 
         {/* Logo */}
         <h1
           style={{
             fontSize: "clamp(40px, 8vw, 72px)",
-            fontWeight: 900,
+            fontWeight: 800,
             letterSpacing: -2,
             lineHeight: 1,
             background: "linear-gradient(135deg, #6366f1, #818cf8, #c084fc)",
@@ -100,7 +91,7 @@ export default function Welcome() {
             marginBottom: 44,
           }}
         >
-          Stop scrolling WhatsApp groups. Start getting booked.
+          Launching soon for the UK film and television industry.
         </p>
 
         {/* CTA */}
@@ -112,9 +103,9 @@ export default function Welcome() {
             background: "linear-gradient(135deg, #6366f1, #4f46e5)",
             color: "#fff",
             padding: "18px 44px",
-            borderRadius: 14,
+            borderRadius: 10,
             fontSize: 17,
-            fontWeight: 800,
+            fontWeight: 700,
             textDecoration: "none",
             boxShadow: "0 4px 24px #6366f144",
             fontFamily: "inherit",

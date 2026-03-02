@@ -31,7 +31,7 @@ export default function LandingNavbar() {
           to="/"
           style={{
             fontSize: 22,
-            fontWeight: 900,
+            fontWeight: 800,
             letterSpacing: -1,
             background: "linear-gradient(135deg,#6366f1,#818cf8)",
             WebkitBackgroundClip: "text",
