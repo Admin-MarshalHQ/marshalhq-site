@@ -54,16 +54,16 @@ export default function ManagerDashboard() {
             to="/manager/post"
             className="cta-btn"
             style={{
-              background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-              color: "#fff",
+              background: C.accent,
+              color: C.bg,
               border: "none",
               padding: "14px 28px",
-              borderRadius: 12,
-              fontSize: 14,
+              borderRadius: 8,
+              fontSize: 13,
               fontWeight: 700,
               cursor: "pointer",
               textDecoration: "none",
-              boxShadow: "0 4px 20px #6366f144",
+              letterSpacing: 0.5,
               whiteSpace: "nowrap",
             }}
           >
@@ -97,7 +97,7 @@ export default function ManagerDashboard() {
               <div style={{ fontSize: 11, color: C.t4, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
                 {card.title}
               </div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: card.color }}>{card.value}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: card.color }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -115,8 +115,7 @@ export default function ManagerDashboard() {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>{"\ud83c\udfac"}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: C.t1, marginBottom: 8 }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, marginBottom: 8 }}>
               Post your first job
             </div>
             <p style={{ fontSize: 14, color: C.t3, maxWidth: 400, margin: "0 auto 24px" }}>
@@ -127,13 +126,14 @@ export default function ManagerDashboard() {
               className="cta-btn"
               style={{
                 display: "inline-block",
-                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                color: "#fff",
+                background: C.accent,
+                color: C.bg,
                 padding: "14px 28px",
-                borderRadius: 12,
-                fontSize: 14,
+                borderRadius: 8,
+                fontSize: 13,
                 fontWeight: 700,
                 textDecoration: "none",
+                letterSpacing: 0.5,
               }}
             >
               + Post a Job

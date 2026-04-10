@@ -33,13 +33,20 @@ function AppLayout({ children }) {
         html{scroll-behavior:smooth;overscroll-behavior:none}
         html,body{min-height:100vh;min-height:100dvh}
         @supports not (min-height:100dvh){html,body{min-height:100vh}}
-        ::selection{background:#6366f1;color:#fff}
+        ::selection{background:${C.accent};color:#08070b}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-        .cta-btn{transition:all .2s !important}
-        .cta-btn:hover{transform:translateY(-2px) !important;box-shadow:0 8px 30px rgba(99,102,241,.35) !important}
-        .card-hover{transition:all .25s !important}
-        .card-hover:hover{border-color:#6366f144 !important;transform:translateY(-2px) !important}
-        input:focus{border-color:#6366f1 !important;outline:none}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .cta-btn{transition:all .25s cubic-bezier(.4,0,.2,1) !important}
+        .cta-btn:hover{transform:translateY(-2px) !important;box-shadow:0 12px 40px rgba(201,168,76,.25) !important}
+        .card-hover{transition:all .3s cubic-bezier(.4,0,.2,1) !important}
+        .card-hover:hover{border-color:${C.b2} !important;transform:translateY(-3px) !important;box-shadow:0 8px 32px rgba(0,0,0,.4) !important}
+        input:focus,textarea:focus{border-color:${C.accent} !important;outline:none;box-shadow:0 0 0 3px ${C.accentGlow} !important}
+        input::placeholder,textarea::placeholder{color:${C.t4}}
+        ::-webkit-scrollbar{width:6px}
+        ::-webkit-scrollbar-track{background:${C.s1}}
+        ::-webkit-scrollbar-thumb{background:${C.b1};border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:${C.b2}}
       `}</style>
       {children}
     </div>

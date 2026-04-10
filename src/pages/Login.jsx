@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { C, FONT } from "../lib/theme";
+import { C, FONT, FONT_DISPLAY } from "../lib/theme";
+// FONT_DISPLAY used only for logo wordmark
 import { useAuth } from "../lib/AuthContext";
 
 export default function Login() {
@@ -85,14 +86,23 @@ export default function Login() {
           <div
             style={{
               background: C.s2,
-              borderRadius: 24,
+              borderRadius: 20,
               padding: 40,
               border: "1px solid " + C.b1,
             }}
           >
-            <div style={{ fontSize: 52, marginBottom: 16 }}>{"\u2709\ufe0f"}</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: C.t1, marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: C.accent, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16 }}>
               Check your email
+            </div>
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: C.t1,
+                marginBottom: 12,
+              }}
+            >
+              Confirmation sent
             </div>
             <p style={{ fontSize: 14, color: C.t3, lineHeight: 1.6, marginBottom: 24 }}>
               We've sent a confirmation link to <strong style={{ color: C.t1 }}>{email}</strong>.
@@ -108,8 +118,8 @@ export default function Login() {
                 color: C.t2,
                 border: "1px solid " + C.b1,
                 padding: "12px 24px",
-                borderRadius: 12,
-                fontSize: 14,
+                borderRadius: 8,
+                fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
@@ -141,12 +151,10 @@ export default function Login() {
           <Link to="/" style={{ textDecoration: "none" }}>
             <div
               style={{
+                fontFamily: FONT_DISPLAY,
                 fontSize: 36,
-                fontWeight: 900,
-                letterSpacing: -2,
-                background: "linear-gradient(135deg,#6366f1,#818cf8,#c084fc)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                fontWeight: 400,
+                color: C.accent,
                 marginBottom: 8,
               }}
             >
@@ -163,7 +171,7 @@ export default function Login() {
           style={{
             display: "flex",
             background: C.s2,
-            borderRadius: 14,
+            borderRadius: 10,
             padding: 4,
             marginBottom: 24,
             border: "1px solid " + C.b1,
@@ -182,9 +190,9 @@ export default function Login() {
                 background: mode === m ? C.s3 : "transparent",
                 color: mode === m ? C.t1 : C.t4,
                 border: "none",
-                borderRadius: 10,
-                fontSize: 14,
-                fontWeight: 700,
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
               }}
@@ -199,7 +207,7 @@ export default function Login() {
           <div
             style={{
               background: C.s2,
-              borderRadius: 24,
+              borderRadius: 20,
               padding: 32,
               border: "1px solid " + C.b1,
             }}
@@ -209,11 +217,11 @@ export default function Login() {
               <div style={{ marginBottom: 20 }}>
                 <label
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
+                    fontSize: 11,
+                    fontWeight: 600,
                     color: C.t3,
                     textTransform: "uppercase",
-                    letterSpacing: 0.5,
+                    letterSpacing: 1,
                     marginBottom: 10,
                     display: "block",
                   }}
@@ -227,15 +235,14 @@ export default function Login() {
                     style={{
                       flex: 1,
                       padding: "18px 12px",
-                      background: role === "marshal" ? "#6366f115" : C.s3,
+                      background: role === "marshal" ? C.accent + "12" : C.s3,
                       border: "2px solid " + (role === "marshal" ? C.accent : C.b1),
-                      borderRadius: 14,
+                      borderRadius: 12,
                       cursor: "pointer",
                       textAlign: "center",
                       fontFamily: "inherit",
                     }}
                   >
-                    <div style={{ fontSize: 28, marginBottom: 6 }}>{"\ud83e\uddba"}</div>
                     <div
                       style={{
                         fontSize: 14,
@@ -253,15 +260,14 @@ export default function Login() {
                     style={{
                       flex: 1,
                       padding: "18px 12px",
-                      background: role === "manager" ? "#6366f115" : C.s3,
+                      background: role === "manager" ? C.accent + "12" : C.s3,
                       border: "2px solid " + (role === "manager" ? C.accent : C.b1),
-                      borderRadius: 14,
+                      borderRadius: 12,
                       cursor: "pointer",
                       textAlign: "center",
                       fontFamily: "inherit",
                     }}
                   >
-                    <div style={{ fontSize: 28, marginBottom: 6 }}>{"\ud83c\udfac"}</div>
                     <div
                       style={{
                         fontSize: 14,
@@ -282,11 +288,11 @@ export default function Login() {
               <div style={{ marginBottom: 14 }}>
                 <label
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
+                    fontSize: 11,
+                    fontWeight: 600,
                     color: C.t3,
                     textTransform: "uppercase",
-                    letterSpacing: 0.5,
+                    letterSpacing: 1,
                     marginBottom: 6,
                     display: "block",
                   }}
@@ -302,7 +308,7 @@ export default function Login() {
                     padding: "13px 16px",
                     background: C.s3,
                     border: "1px solid " + C.b1,
-                    borderRadius: 12,
+                    borderRadius: 10,
                     color: C.t1,
                     fontSize: 14,
                     fontFamily: "inherit",
@@ -317,11 +323,11 @@ export default function Login() {
             <div style={{ marginBottom: 14 }}>
               <label
                 style={{
-                  fontSize: 12,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 600,
                   color: C.t3,
                   textTransform: "uppercase",
-                  letterSpacing: 0.5,
+                  letterSpacing: 1,
                   marginBottom: 6,
                   display: "block",
                 }}
@@ -339,7 +345,7 @@ export default function Login() {
                   padding: "13px 16px",
                   background: C.s3,
                   border: "1px solid " + C.b1,
-                  borderRadius: 12,
+                  borderRadius: 10,
                   color: C.t1,
                   fontSize: 14,
                   fontFamily: "inherit",
@@ -353,11 +359,11 @@ export default function Login() {
             <div style={{ marginBottom: 20 }}>
               <label
                 style={{
-                  fontSize: 12,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 600,
                   color: C.t3,
                   textTransform: "uppercase",
-                  letterSpacing: 0.5,
+                  letterSpacing: 1,
                   marginBottom: 6,
                   display: "block",
                 }}
@@ -376,7 +382,7 @@ export default function Login() {
                   padding: "13px 16px",
                   background: C.s3,
                   border: "1px solid " + C.b1,
-                  borderRadius: 12,
+                  borderRadius: 10,
                   color: C.t1,
                   fontSize: 14,
                   fontFamily: "inherit",
@@ -393,7 +399,7 @@ export default function Login() {
                   padding: "10px 14px",
                   background: "#ef444415",
                   border: "1px solid #ef444433",
-                  borderRadius: 10,
+                  borderRadius: 8,
                   marginBottom: 14,
                   fontSize: 13,
                   color: C.red,
@@ -412,16 +418,16 @@ export default function Login() {
               style={{
                 width: "100%",
                 padding: "16px",
-                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                color: "#fff",
+                background: C.accent,
+                color: C.bg,
                 border: "none",
-                borderRadius: 14,
-                fontSize: 16,
-                fontWeight: 800,
+                borderRadius: 10,
+                fontSize: 15,
+                fontWeight: 700,
                 cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.7 : 1,
                 fontFamily: "inherit",
-                boxShadow: "0 4px 20px #6366f144",
+                letterSpacing: 0.5,
               }}
             >
               {loading

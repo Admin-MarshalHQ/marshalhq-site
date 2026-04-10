@@ -346,16 +346,16 @@ export default function PostJob() {
               style={{
                 width: "100%",
                 padding: "16px",
-                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                color: "#fff",
+                background: C.accent,
+                color: C.bg,
                 border: "none",
-                borderRadius: 14,
-                fontSize: 16,
-                fontWeight: 800,
+                borderRadius: 10,
+                fontSize: 15,
+                fontWeight: 700,
                 cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.7 : 1,
                 fontFamily: "inherit",
-                boxShadow: "0 4px 20px #6366f144",
+                letterSpacing: 0.5,
               }}
             >
               {loading ? (isEdit ? "Saving..." : "Posting...") : (isEdit ? "Save Changes" : "Post Job")}

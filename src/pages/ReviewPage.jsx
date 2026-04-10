@@ -119,8 +119,7 @@ export default function ReviewPage() {
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
         <Section style={{ paddingTop: 100, textAlign: "center", maxWidth: 500 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>&#9989;</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Already reviewed</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Already reviewed</div>
           <p style={{ fontSize: 14, color: C.t3, marginBottom: 20 }}>
             You have already left a review for {targetName} on this job.
           </p>
@@ -272,16 +271,16 @@ export default function ReviewPage() {
             style={{
               width: "100%",
               padding: "16px",
-              background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-              color: "#fff",
+              background: C.accent,
+              color: C.bg,
               border: "none",
-              borderRadius: 14,
-              fontSize: 16,
-              fontWeight: 800,
+              borderRadius: 10,
+              fontSize: 15,
+              fontWeight: 700,
               cursor: submitting ? "not-allowed" : "pointer",
               opacity: submitting ? 0.7 : 1,
               fontFamily: "inherit",
-              boxShadow: "0 4px 20px #6366f144",
+              letterSpacing: 0.5,
             }}
           >
             {submitting ? "Submitting..." : "Submit Review"}

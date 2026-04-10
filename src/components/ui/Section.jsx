@@ -12,12 +12,12 @@ export function SectionLabel({ children }) {
   return (
     <div
       style={{
-        fontSize: 12,
-        fontWeight: 700,
+        fontSize: 11,
+        fontWeight: 600,
         color: C.accent,
         textTransform: "uppercase",
-        letterSpacing: 2,
-        marginBottom: 12,
+        letterSpacing: 3,
+        marginBottom: 14,
       }}
     >
       {children}
@@ -29,12 +29,12 @@ export function SectionTitle({ children }) {
   return (
     <h2
       style={{
-        fontSize: "clamp(28px, 4vw, 42px)",
-        fontWeight: 800,
+        fontSize: "clamp(28px, 4vw, 44px)",
+        fontWeight: 700,
         color: C.t1,
         lineHeight: 1.15,
-        letterSpacing: -1,
-        margin: "0 0 16px",
+        letterSpacing: -0.5,
+        margin: "0 0 20px",
       }}
     >
       {children}

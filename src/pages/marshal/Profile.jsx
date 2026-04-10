@@ -389,7 +389,7 @@ export default function MarshalProfile() {
                   height: 52,
                   borderRadius: 12,
                   border: "2px solid " + (form[day.key] ? C.accent : C.b1),
-                  background: form[day.key] ? "#6366f118" : C.s3,
+                  background: form[day.key] ? C.accent + "15" : C.s3,
                   color: form[day.key] ? C.accent : C.t4,
                   fontSize: 13,
                   fontWeight: 700,
@@ -432,18 +432,16 @@ export default function MarshalProfile() {
           style={{
             width: "100%",
             padding: "18px",
-            background: saved
-              ? C.green
-              : "linear-gradient(135deg,#6366f1,#4f46e5)",
-            color: "#fff",
+            background: saved ? C.green : C.accent,
+            color: saved ? "#fff" : C.bg,
             border: "none",
-            borderRadius: 14,
-            fontSize: 16,
-            fontWeight: 800,
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
             cursor: saving ? "not-allowed" : "pointer",
             opacity: saving ? 0.7 : 1,
             fontFamily: "inherit",
-            boxShadow: saved ? "none" : "0 4px 20px #6366f144",
+            letterSpacing: 0.5,
             marginBottom: 60,
           }}
         >

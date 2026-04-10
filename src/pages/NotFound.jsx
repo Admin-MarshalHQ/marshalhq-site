@@ -15,11 +15,18 @@ export default function NotFound() {
       }}
     >
       <div style={{ textAlign: "center", maxWidth: 440, width: "100%" }}>
-        <div style={{ fontSize: 72, marginBottom: 12 }}>{"\ud83d\udd76\ufe0f"}</div>
-        <div style={{ fontSize: 48, fontWeight: 900, color: C.t1, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 80,
+            fontWeight: 800,
+            color: C.accent,
+            lineHeight: 1,
+            marginBottom: 8,
+          }}
+        >
           404
         </div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: C.t2, marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: C.t2, marginBottom: 8 }}>
           Page not found
         </div>
         <p style={{ fontSize: 14, color: C.t3, lineHeight: 1.6, marginBottom: 28 }}>
@@ -30,15 +37,15 @@ export default function NotFound() {
           className="cta-btn"
           style={{
             display: "inline-block",
-            background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-            color: "#fff",
+            background: C.accent,
+            color: C.bg,
             border: "none",
             padding: "14px 28px",
-            borderRadius: 12,
-            fontSize: 14,
+            borderRadius: 8,
+            fontSize: 13,
             fontWeight: 700,
             textDecoration: "none",
-            boxShadow: "0 4px 20px #6366f144",
+            letterSpacing: 0.5,
           }}
         >
           Back to Home

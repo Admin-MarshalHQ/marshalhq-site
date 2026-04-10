@@ -1,20 +1,28 @@
-// MarshalHQ Design System
+// MarshalHQ Design System — Cinema Noir Editorial
 export const C = {
-  bg: "#050508",
-  s1: "#0a0a10",
-  s2: "#111118",
-  s3: "#18181f",
-  b1: "#222230",
-  accent: "#6366f1",
-  accentL: "#818cf8",
-  accentD: "#4f46e5",
-  green: "#10b981",
-  orange: "#f59e0b",
-  red: "#ef4444",
-  t1: "#f1f5f9",
-  t2: "#cbd5e1",
-  t3: "#94a3b8",
-  t4: "#64748b",
+  // Backgrounds — warm dark with depth
+  bg: "#08070b",
+  s1: "#0f0e14",
+  s2: "#14131a",
+  s3: "#1c1b24",
+  // Border
+  b1: "#2a2937",
+  b2: "#38364a",
+  // Accent — cinematic gold
+  accent: "#c9a84c",
+  accentL: "#e2c56d",
+  accentD: "#a68a30",
+  accentGlow: "rgba(201,168,76,0.12)",
+  // Semantic
+  green: "#34d399",
+  orange: "#fbbf24",
+  red: "#f87171",
+  // Text — warm whites
+  t1: "#f5f0e8",
+  t2: "#c4bfb3",
+  t3: "#8c8778",
+  t4: "#5c5850",
 };
 
-export const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+export const FONT = "'Outfit',sans-serif";
+export const FONT_DISPLAY = "'Instrument Serif',serif";

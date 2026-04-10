@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { C } from "../lib/theme";
+import { C, FONT_DISPLAY } from "../lib/theme";
 import FadeIn from "../components/ui/FadeIn";
 import Counter from "../components/ui/Counter";
 import { Section, SectionLabel, SectionTitle } from "../components/ui/Section";
@@ -51,7 +51,7 @@ export default function Landing() {
             width: 800,
             height: 800,
             borderRadius: "50%",
-            background: "radial-gradient(circle, #6366f112 0%, transparent 70%)",
+            background: "radial-gradient(circle, " + C.accent + "0a 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -61,15 +61,16 @@ export default function Landing() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                background: "#6366f115",
-                border: "1px solid #6366f133",
+                background: C.accent + "12",
+                border: "1px solid " + C.accent + "33",
                 borderRadius: 50,
                 padding: "6px 18px",
                 marginBottom: 28,
-                fontSize: 13,
+                fontSize: 12,
                 color: C.accentL,
                 fontWeight: 600,
-                letterSpacing: 0.5,
+                letterSpacing: 1,
+                textTransform: "uppercase",
               }}
             >
               Early Access &mdash; Now Open
@@ -78,23 +79,17 @@ export default function Landing() {
           <FadeIn delay={0.05}>
             <h1
               style={{
-                fontSize: "clamp(36px, 6vw, 68px)",
+                fontSize: "clamp(36px, 6vw, 64px)",
                 fontWeight: 800,
-                lineHeight: 1.05,
-                letterSpacing: -2,
+                lineHeight: 1.08,
+                letterSpacing: -1.5,
                 maxWidth: 800,
                 margin: "0 auto 20px",
+                color: C.t1,
               }}
             >
-              The professional way to
-              <br />
-              <span
-                style={{
-                  background: "linear-gradient(135deg,#6366f1,#818cf8,#c084fc)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
+              The professional way to{" "}
+              <span style={{ color: C.accent }}>
                 hire location marshals.
               </span>
             </h1>
@@ -120,15 +115,15 @@ export default function Landing() {
                 className="cta-btn"
                 onClick={scrollToForm}
                 style={{
-                  background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                  color: "#fff",
+                  background: C.accent,
+                  color: C.bg,
                   border: "none",
                   padding: "16px 36px",
-                  borderRadius: 10,
-                  fontSize: 17,
+                  borderRadius: 8,
+                  fontSize: 14,
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 4px 20px #6366f144",
+                  letterSpacing: 0.5,
                   fontFamily: "inherit",
                 }}
               >
@@ -143,8 +138,9 @@ export default function Landing() {
                   color: C.t2,
                   textDecoration: "none",
                   padding: "16px 24px",
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: 500,
+                  transition: "color .2s",
                 }}
               >
                 See how it works
@@ -235,13 +231,20 @@ export default function Landing() {
                   className="card-hover"
                   style={{
                     background: C.s2,
-                    borderRadius: 16,
+                    borderRadius: 14,
                     padding: 28,
                     border: "1px solid " + C.b1,
                     height: "100%",
                   }}
                 >
-                  <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: C.t1,
+                      marginBottom: 16,
+                    }}
+                  >
                     {c.title}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -307,7 +310,7 @@ export default function Landing() {
                 className="card-hover"
                 style={{
                   background: C.s2,
-                  borderRadius: 16,
+                  borderRadius: 14,
                   padding: 28,
                   border: "1px solid " + C.b1,
                   textAlign: "center",
@@ -317,15 +320,23 @@ export default function Landing() {
                 <div
                   style={{
                     fontSize: 11,
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: s.color,
-                    letterSpacing: 1,
+                    letterSpacing: 2,
                     marginBottom: 16,
+                    textTransform: "uppercase",
                   }}
                 >
-                  STEP {s.step}
+                  Step {s.step}
                 </div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, marginBottom: 8 }}>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 700,
+                    color: C.t1,
+                    marginBottom: 8,
+                  }}
+                >
                   {s.title}
                 </div>
                 <p style={{ fontSize: 13, color: C.t3, lineHeight: 1.6 }}>{s.desc}</p>
@@ -354,13 +365,20 @@ export default function Landing() {
             <FadeIn>
               <div
                 style={{
-                  background: "linear-gradient(135deg, #6366f108, #6366f103)",
-                  borderRadius: 16,
+                  background: C.accent + "06",
+                  borderRadius: 14,
                   padding: 32,
-                  border: "1px solid #6366f122",
+                  border: "1px solid " + C.accent + "20",
                 }}
               >
-                <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: C.t1,
+                    marginBottom: 16,
+                  }}
+                >
                   For Location Managers
                 </div>
                 {[
@@ -383,13 +401,20 @@ export default function Landing() {
             <FadeIn delay={0.1}>
               <div
                 style={{
-                  background: "linear-gradient(135deg, #10b98108, #10b98103)",
-                  borderRadius: 16,
+                  background: C.green + "06",
+                  borderRadius: 14,
                   padding: 32,
-                  border: "1px solid #10b98122",
+                  border: "1px solid " + C.green + "20",
                 }}
               >
-                <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: C.t1,
+                    marginBottom: 16,
+                  }}
+                >
                   For Location Marshals
                 </div>
                 {[
@@ -447,14 +472,14 @@ export default function Landing() {
                 className="card-hover"
                 style={{
                   background: C.s2,
-                  borderRadius: 16,
+                  borderRadius: 14,
                   padding: 24,
                   border: "1px solid " + C.b1,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 32, fontWeight: 800, color: C.accent }}>{s.n}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginTop: 6 }}>{s.l}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: C.accent }}>{s.n}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginTop: 6 }}>{s.l}</div>
                 <div style={{ fontSize: 11, color: C.t4, marginTop: 4 }}>{s.sub}</div>
               </div>
             </FadeIn>
@@ -480,7 +505,7 @@ export default function Landing() {
                       style={{
                         padding: "14px 16px",
                         textAlign: "left",
-                        fontSize: 13,
+                        fontSize: 12,
                         color: C.t4,
                         fontWeight: 600,
                         borderBottom: "1px solid " + C.b1,
@@ -490,7 +515,7 @@ export default function Landing() {
                       style={{
                         padding: "14px 16px",
                         textAlign: "center",
-                        fontSize: 13,
+                        fontSize: 12,
                         color: C.t4,
                         fontWeight: 600,
                         borderBottom: "1px solid " + C.b1,
@@ -502,11 +527,11 @@ export default function Landing() {
                       style={{
                         padding: "14px 16px",
                         textAlign: "center",
-                        fontSize: 13,
+                        fontSize: 12,
                         color: C.accent,
                         fontWeight: 700,
-                        borderBottom: "1px solid #6366f133",
-                        background: "#6366f108",
+                        borderBottom: "1px solid " + C.accent + "33",
+                        background: C.accent + "08",
                       }}
                     >
                       MarshalHQ
@@ -530,7 +555,7 @@ export default function Landing() {
                           fontSize: 13,
                           fontWeight: 600,
                           color: C.t2,
-                          borderBottom: "1px solid #22223022",
+                          borderBottom: "1px solid " + C.b1 + "44",
                         }}
                       >
                         {row[0]}
@@ -541,7 +566,7 @@ export default function Landing() {
                           textAlign: "center",
                           fontSize: 13,
                           color: C.red,
-                          borderBottom: "1px solid #22223022",
+                          borderBottom: "1px solid " + C.b1 + "44",
                         }}
                       >
                         {row[1]}
@@ -553,8 +578,8 @@ export default function Landing() {
                           fontSize: 13,
                           color: C.green,
                           fontWeight: 600,
-                          borderBottom: "1px solid #22223022",
-                          background: "#6366f105",
+                          borderBottom: "1px solid " + C.b1 + "44",
+                          background: C.accent + "05",
                         }}
                       >
                         {row[2]}
@@ -583,12 +608,12 @@ export default function Landing() {
               <div
                 style={{
                   padding: 40,
-                  background: "#10b98110",
-                  border: "1px solid #10b98133",
-                  borderRadius: 16,
+                  background: C.green + "10",
+                  border: "1px solid " + C.green + "33",
+                  borderRadius: 14,
                 }}
               >
-                <div style={{ fontSize: 24, fontWeight: 800, color: C.green }}>Registration confirmed</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: C.green }}>Registration confirmed</div>
                 <div style={{ fontSize: 14, color: C.t3, marginTop: 10, lineHeight: 1.6 }}>
                   We will be in touch soon with early access details.
                 </div>
@@ -597,7 +622,7 @@ export default function Landing() {
                     marginTop: 20,
                     padding: "14px 20px",
                     background: C.s2,
-                    borderRadius: 12,
+                    borderRadius: 10,
                     border: "1px solid " + C.b1,
                   }}
                 >
@@ -609,7 +634,7 @@ export default function Landing() {
               <div
                 style={{
                   background: C.s2,
-                  borderRadius: 16,
+                  borderRadius: 14,
                   padding: 32,
                   border: "1px solid " + C.b1,
                   textAlign: "left",
@@ -618,11 +643,11 @@ export default function Landing() {
                 <div style={{ marginBottom: 20 }}>
                   <label
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
+                      fontSize: 11,
+                      fontWeight: 600,
                       color: C.t3,
                       textTransform: "uppercase",
-                      letterSpacing: 0.5,
+                      letterSpacing: 1,
                       marginBottom: 10,
                       display: "block",
                     }}
@@ -635,7 +660,7 @@ export default function Landing() {
                       style={{
                         flex: 1,
                         padding: "18px 12px",
-                        background: role === "marshal" ? "#6366f115" : C.s3,
+                        background: role === "marshal" ? C.accent + "12" : C.s3,
                         border: "2px solid " + (role === "marshal" ? C.accent : C.b1),
                         borderRadius: 10,
                         cursor: "pointer",
@@ -658,7 +683,7 @@ export default function Landing() {
                       style={{
                         flex: 1,
                         padding: "18px 12px",
-                        background: role === "manager" ? "#6366f115" : C.s3,
+                        background: role === "manager" ? C.accent + "12" : C.s3,
                         border: "2px solid " + (role === "manager" ? C.accent : C.b1),
                         borderRadius: 10,
                         cursor: "pointer",
@@ -682,11 +707,11 @@ export default function Landing() {
                 <div style={{ marginBottom: 14 }}>
                   <label
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
+                      fontSize: 11,
+                      fontWeight: 600,
                       color: C.t3,
                       textTransform: "uppercase",
-                      letterSpacing: 0.5,
+                      letterSpacing: 1,
                       marginBottom: 6,
                       display: "block",
                     }}
@@ -714,11 +739,11 @@ export default function Landing() {
                 <div style={{ marginBottom: 14 }}>
                   <label
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
+                      fontSize: 11,
+                      fontWeight: 600,
                       color: C.t3,
                       textTransform: "uppercase",
-                      letterSpacing: 0.5,
+                      letterSpacing: 1,
                       marginBottom: 6,
                       display: "block",
                     }}
@@ -747,11 +772,11 @@ export default function Landing() {
                 <div style={{ marginBottom: 20 }}>
                   <label
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
+                      fontSize: 11,
+                      fontWeight: 600,
                       color: C.t3,
                       textTransform: "uppercase",
-                      letterSpacing: 0.5,
+                      letterSpacing: 1,
                       marginBottom: 6,
                       display: "block",
                     }}
@@ -782,7 +807,7 @@ export default function Landing() {
                       padding: "10px 14px",
                       background: "#ef444415",
                       border: "1px solid #ef444433",
-                      borderRadius: 10,
+                      borderRadius: 8,
                       marginBottom: 14,
                       fontSize: 13,
                       color: C.red,
@@ -800,17 +825,16 @@ export default function Landing() {
                   style={{
                     width: "100%",
                     padding: "16px",
-                    background:
-                      !email || !role ? C.b1 : "linear-gradient(135deg,#6366f1,#4f46e5)",
-                    color: "#fff",
+                    background: !email || !role ? C.b1 : C.accent,
+                    color: !email || !role ? C.t4 : C.bg,
                     border: "none",
-                    borderRadius: 10,
-                    fontSize: 16,
+                    borderRadius: 8,
+                    fontSize: 14,
                     fontWeight: 700,
                     cursor: !email || !role || submitting ? "not-allowed" : "pointer",
-                    boxShadow: email && role ? "0 4px 20px #6366f144" : "none",
                     opacity: submitting ? 0.7 : 1,
                     fontFamily: "inherit",
+                    letterSpacing: 0.5,
                   }}
                 >
                   {submitting ? "Submitting..." : "Join the Waitlist"}
@@ -843,10 +867,10 @@ export default function Landing() {
             <FadeIn>
               <div
                 style={{
-                  background: "linear-gradient(135deg, #6366f110, #818cf808)",
-                  borderRadius: 16,
+                  background: C.accent + "08",
+                  borderRadius: 14,
                   padding: "40px 32px",
-                  border: "1px solid #6366f122",
+                  border: "1px solid " + C.accent + "20",
                   textAlign: "center",
                   maxWidth: 700,
                   margin: "0 auto",
@@ -864,7 +888,14 @@ export default function Landing() {
                 >
                   Founding Member Benefits
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 800, color: C.t1, marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 700,
+                    color: C.t1,
+                    marginBottom: 16,
+                  }}
+                >
                   Register now. Zero platform fees for three months.
                 </div>
                 <div
@@ -884,7 +915,7 @@ export default function Landing() {
                   ].map((text, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 16, color: C.accent, fontWeight: 700 }}>&mdash;</span>
-                      <span style={{ fontSize: 14, color: C.t2, fontWeight: 600 }}>{text}</span>
+                      <span style={{ fontSize: 14, color: C.t2, fontWeight: 500 }}>{text}</span>
                     </div>
                   ))}
                 </div>
@@ -895,7 +926,7 @@ export default function Landing() {
       )}
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #22223022" }}>
+      <div style={{ borderTop: "1px solid " + C.b1 + "44" }}>
         <Section style={{ paddingTop: 32, paddingBottom: 32 }}>
           <div
             style={{
@@ -909,11 +940,10 @@ export default function Landing() {
             <div>
               <div
                 style={{
-                  fontSize: 18,
-                  fontWeight: 800,
-                  background: "linear-gradient(135deg,#6366f1,#818cf8)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  fontFamily: FONT_DISPLAY,
+                  fontSize: 20,
+                  fontWeight: 400,
+                  color: C.accent,
                 }}
               >
                 MarshalHQ

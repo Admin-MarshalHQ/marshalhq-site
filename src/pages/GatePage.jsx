@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { C, FONT } from "../lib/theme";
+import { C, FONT, FONT_DISPLAY } from "../lib/theme";
+// FONT_DISPLAY used only for logo wordmark
 
 const ADMIN_PASSWORD = import.meta.env.VITE_DEV_PASSWORD || "marshalhq2026";
 
@@ -31,12 +32,10 @@ export default function GatePage({ onUnlock }) {
       <div style={{ textAlign: "center", maxWidth: 400, width: "100%" }}>
         <div
           style={{
+            fontFamily: FONT_DISPLAY,
             fontSize: 36,
-            fontWeight: 900,
-            letterSpacing: -2,
-            background: "linear-gradient(135deg,#6366f1,#818cf8,#c084fc)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            fontWeight: 400,
+            color: C.accent,
             marginBottom: 8,
           }}
         >
@@ -48,7 +47,7 @@ export default function GatePage({ onUnlock }) {
         <div
           style={{
             background: C.s2,
-            borderRadius: 20,
+            borderRadius: 16,
             padding: 32,
             border: "1px solid " + C.b1,
             textAlign: "left",
@@ -56,11 +55,11 @@ export default function GatePage({ onUnlock }) {
         >
           <label
             style={{
-              fontSize: 12,
-              fontWeight: 700,
+              fontSize: 11,
+              fontWeight: 600,
               color: C.t3,
               textTransform: "uppercase",
-              letterSpacing: 0.5,
+              letterSpacing: 1,
               marginBottom: 8,
               display: "block",
             }}
@@ -80,7 +79,7 @@ export default function GatePage({ onUnlock }) {
               padding: "13px 16px",
               background: C.s3,
               border: "1px solid " + (wrong ? C.red : C.b1),
-              borderRadius: 12,
+              borderRadius: 10,
               color: C.t1,
               fontSize: 14,
               fontFamily: "inherit",
@@ -99,17 +98,18 @@ export default function GatePage({ onUnlock }) {
             style={{
               width: "100%",
               padding: "14px",
-              background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-              color: "#fff",
+              background: C.accent,
+              color: C.bg,
               border: "none",
-              borderRadius: 12,
-              fontSize: 15,
+              borderRadius: 10,
+              fontSize: 14,
               fontWeight: 700,
               cursor: "pointer",
               fontFamily: "inherit",
+              letterSpacing: 0.5,
             }}
           >
-            Sign In
+            Continue
           </button>
         </div>
         <div style={{ fontSize: 12, color: C.t4, marginTop: 20 }}>Authorised access only</div>

@@ -15,8 +15,8 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
         className="card-hover"
         style={{
           background: C.s2,
-          borderRadius: 16,
-          padding: 22,
+          borderRadius: 14,
+          padding: "20px 22px",
           border: "1px solid " + (job.is_urgent ? "#ef444433" : C.b1),
           cursor: "pointer",
         }}
@@ -48,7 +48,7 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
                     fontWeight: 700,
                     padding: "2px 7px",
                     borderRadius: 6,
-                    background: "#6366f118",
+                    background: C.accent + "15",
                     color: C.accentL,
                   }}
                 >
@@ -56,12 +56,12 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: C.t1 }}>{job.title}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.t1, letterSpacing: -0.2 }}>{job.title}</div>
           </div>
           <div
             style={{
-              fontSize: 18,
-              fontWeight: 900,
+              fontSize: 20,
+              fontWeight: 700,
               color: C.green,
               whiteSpace: "nowrap",
             }}
@@ -72,13 +72,18 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
 
         {/* Details row */}
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: C.t3 }}>
-          <span>{"\ud83d\udccd"} {job.location}</span>
-          <span>{"\ud83d\udcc5"} {dateFormatted}</span>
-          <span>{"\u23f0"} {job.start_time} {"\u2013"} {job.end_time}</span>
+          <span>{job.location}</span>
+          <span style={{ color: C.b2 }}>{"\u00b7"}</span>
+          <span>{dateFormatted}</span>
+          <span style={{ color: C.b2 }}>{"\u00b7"}</span>
+          <span>{job.start_time} {"\u2013"} {job.end_time}</span>
           {showSlots && (
-            <span style={{ color: slotsRemaining <= 1 ? C.orange : C.t3 }}>
-              {"\ud83d\udc65"} {slotsRemaining}/{job.slots_needed} slots
-            </span>
+            <>
+              <span style={{ color: C.b2 }}>{"\u00b7"}</span>
+              <span style={{ color: slotsRemaining <= 1 ? C.orange : C.t3 }}>
+                {slotsRemaining}/{job.slots_needed} slots
+              </span>
+            </>
           )}
         </div>
       </div>

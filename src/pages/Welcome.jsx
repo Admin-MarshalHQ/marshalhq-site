@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { C } from "../lib/theme";
+import { C, FONT_DISPLAY } from "../lib/theme";
+// FONT_DISPLAY used only for logo wordmark
 
 export default function Welcome() {
   return (
@@ -26,7 +27,7 @@ export default function Welcome() {
           width: 600,
           height: 600,
           borderRadius: "50%",
-          background: "radial-gradient(circle, #6366f110 0%, transparent 70%)",
+          background: "radial-gradient(circle, " + C.accent + "08 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -38,15 +39,16 @@ export default function Welcome() {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            background: "#6366f115",
-            border: "1px solid #6366f133",
+            background: C.accent + "12",
+            border: "1px solid " + C.accent + "33",
             borderRadius: 50,
             padding: "6px 18px",
             marginBottom: 36,
-            fontSize: 13,
+            fontSize: 12,
             color: C.accentL,
             fontWeight: 600,
-            letterSpacing: 0.5,
+            letterSpacing: 1,
+            textTransform: "uppercase",
           }}
         >
           Early Access
@@ -55,13 +57,12 @@ export default function Welcome() {
         {/* Logo */}
         <h1
           style={{
-            fontSize: "clamp(40px, 8vw, 72px)",
-            fontWeight: 800,
-            letterSpacing: -2,
+            fontFamily: FONT_DISPLAY,
+            fontSize: "clamp(44px, 9vw, 80px)",
+            fontWeight: 400,
+            color: C.accent,
             lineHeight: 1,
-            background: "linear-gradient(135deg, #6366f1, #818cf8, #c084fc)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            letterSpacing: -1,
             marginBottom: 20,
           }}
         >
@@ -74,7 +75,7 @@ export default function Welcome() {
             fontSize: "clamp(16px, 2.5vw, 22px)",
             color: C.t2,
             lineHeight: 1.5,
-            fontWeight: 500,
+            fontWeight: 400,
             marginBottom: 12,
           }}
         >
@@ -100,14 +101,14 @@ export default function Welcome() {
           className="cta-btn"
           style={{
             display: "inline-block",
-            background: "linear-gradient(135deg, #6366f1, #4f46e5)",
-            color: "#fff",
+            background: C.accent,
+            color: C.bg,
             padding: "18px 44px",
-            borderRadius: 10,
-            fontSize: 17,
+            borderRadius: 8,
+            fontSize: 14,
             fontWeight: 700,
             textDecoration: "none",
-            boxShadow: "0 4px 24px #6366f144",
+            letterSpacing: 0.5,
             fontFamily: "inherit",
           }}
         >

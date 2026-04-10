@@ -263,15 +263,15 @@ export default function JobApplicants() {
         {/* Stats bar */}
         <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
           <div style={{ background: C.s2, borderRadius: 12, padding: "12px 20px", border: "1px solid " + C.b1, textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: C.t1 }}>{applicants.length}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.t1 }}>{applicants.length}</div>
             <div style={{ fontSize: 11, color: C.t4 }}>Total</div>
           </div>
           <div style={{ background: C.s2, borderRadius: 12, padding: "12px 20px", border: "1px solid " + C.b1, textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: C.orange }}>{pendingCount}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.orange }}>{pendingCount}</div>
             <div style={{ fontSize: 11, color: C.t4 }}>Pending</div>
           </div>
           <div style={{ background: C.s2, borderRadius: 12, padding: "12px 20px", border: "1px solid " + C.b1, textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: C.green }}>{acceptedCount}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.green }}>{acceptedCount}</div>
             <div style={{ fontSize: 11, color: C.t4 }}>Accepted</div>
           </div>
         </div>
@@ -287,8 +287,7 @@ export default function JobApplicants() {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 12 }}>{"\ud83d\udceb"}</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: C.t2 }}>No applicants yet</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>No applicants yet</div>
             <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
               Applicants will appear here when marshals apply for this job.
             </p>
@@ -314,7 +313,7 @@ export default function JobApplicants() {
                     {/* Applicant info */}
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: C.t1 }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: C.t1 }}>
                           {p?.full_name || "Unknown"}
                         </div>
                         <span

@@ -109,7 +109,7 @@ export default function MarshalDashboard() {
               <div style={{ fontSize: 11, color: C.t4, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
                 {card.title}
               </div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: card.color }}>{card.value}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: card.color }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -296,8 +296,7 @@ export default function MarshalDashboard() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{"\ud83d\udcad"}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: C.t2 }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>
                   {hasFilters ? "No jobs match your filters" : "No jobs posted yet"}
                 </div>
                 <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
@@ -324,8 +323,7 @@ export default function MarshalDashboard() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{"\ud83d\udceb"}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: C.t2 }}>No applications yet</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>No applications yet</div>
                 <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
                   Apply to jobs from the Available Jobs tab.
                 </p>
@@ -349,7 +347,7 @@ export default function MarshalDashboard() {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                         <div>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, marginBottom: 4 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: C.t1, marginBottom: 4 }}>
                             {app.jobs?.title || "Unknown Job"}
                           </div>
                           <div style={{ fontSize: 12, color: C.t3 }}>

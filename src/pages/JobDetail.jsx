@@ -201,7 +201,7 @@ export default function JobDetail() {
               </span>
             )}
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: C.t1, margin: "0 0 8px", letterSpacing: -0.5 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: C.t1, margin: "0 0 8px", letterSpacing: -0.5 }}>
             {job.title}
           </h1>
           {job.production_name && (
@@ -303,7 +303,7 @@ export default function JobDetail() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 16, fontWeight: 800, color: statusColors[applicationStatus], marginBottom: 4 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: statusColors[applicationStatus], marginBottom: 4 }}>
                   {applicationStatus === "pending" && "Application Submitted"}
                   {applicationStatus === "accepted" && "You\u2019re Booked!"}
                   {applicationStatus === "declined" && "Application Declined"}
@@ -440,16 +440,16 @@ export default function JobDetail() {
                   style={{
                     width: "100%",
                     padding: "18px",
-                    background: "linear-gradient(135deg,#10b981,#059669)",
-                    color: "#fff",
+                    background: C.green,
+                    color: C.bg,
                     border: "none",
-                    borderRadius: 14,
-                    fontSize: 17,
-                    fontWeight: 800,
+                    borderRadius: 10,
+                    fontSize: 15,
+                    fontWeight: 700,
                     cursor: applying ? "not-allowed" : "pointer",
                     opacity: applying ? 0.7 : 1,
                     fontFamily: "inherit",
-                    boxShadow: "0 4px 20px #10b98144",
+                    letterSpacing: 0.5,
                   }}
                 >
                   {applying ? "Applying..." : "Apply Now"}
@@ -471,7 +471,7 @@ export default function JobDetail() {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 800, color: C.accent, marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.accent, marginBottom: 4 }}>
               Job Completed
             </div>
             <p style={{ fontSize: 13, color: C.t3, marginBottom: 12 }}>
@@ -483,12 +483,13 @@ export default function JobDetail() {
               style={{
                 display: "inline-block",
                 padding: "12px 28px",
-                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
-                color: "#fff",
-                borderRadius: 12,
-                fontSize: 14,
+                background: C.accent,
+                color: C.bg,
+                borderRadius: 8,
+                fontSize: 13,
                 fontWeight: 700,
                 textDecoration: "none",
+                letterSpacing: 0.5,
               }}
             >
               Leave a Review
