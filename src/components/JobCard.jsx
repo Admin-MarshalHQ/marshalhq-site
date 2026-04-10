@@ -74,7 +74,7 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: C.t3 }}>
           <span>{"\ud83d\udccd"} {job.location}</span>
           <span>{"\ud83d\udcc5"} {dateFormatted}</span>
-          <span>{"\u23f0"} {job.start_time} \u2013 {job.end_time}</span>
+          <span>{"\u23f0"} {job.start_time} {"\u2013"} {job.end_time}</span>
           {showSlots && (
             <span style={{ color: slotsRemaining <= 1 ? C.orange : C.t3 }}>
               {"\ud83d\udc65"} {slotsRemaining}/{job.slots_needed} slots
