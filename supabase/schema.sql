@@ -6,6 +6,7 @@ create table if not exists profiles (
   id uuid references auth.users on delete cascade primary key,
   role text not null check (role in ('marshal', 'manager')),
   full_name text not null default '',
+  email text default '',
   phone text default '',
   location text default '',
   bio text default '',
@@ -55,7 +56,7 @@ create table if not exists applications (
   id uuid default gen_random_uuid() primary key,
   job_id uuid references jobs(id) on delete cascade not null,
   applicant_id uuid references profiles(id) on delete cascade not null,
-  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined')),
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined', 'withdrawn')),
   message text default '',
   applied_at timestamptz default now(),
   unique(job_id, applicant_id)
@@ -137,6 +138,11 @@ create policy "Job owner can update application status"
     exists (select 1 from jobs where jobs.id = applications.job_id and jobs.posted_by = auth.uid())
   );
 
+create policy "Marshals can withdraw own pending applications"
+  on applications for update
+  to authenticated
+  using (applicant_id = auth.uid() and status = 'pending');
+
 -- 9. RLS Policies for reviews
 create policy "Anyone authenticated can view reviews"
   on reviews for select
@@ -147,3 +153,30 @@ create policy "Users can insert reviews for completed jobs"
   on reviews for insert
   to authenticated
   with check (reviewer_id = auth.uid());
+
+-- 10. Rating aggregation trigger
+-- Automatically updates avg_rating and total_jobs on profiles when a review is inserted
+create or replace function update_user_rating()
+returns trigger as $$
+begin
+  update profiles set
+    avg_rating = (select round(avg(rating)::numeric, 2) from reviews where reviewed_user_id = NEW.reviewed_user_id),
+    total_jobs = (select count(distinct job_id) from reviews where reviewed_user_id = NEW.reviewed_user_id)
+  where id = NEW.reviewed_user_id;
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger on_review_insert
+  after insert on reviews
+  for each row
+  execute function update_user_rating();
+
+-- ============================================================
+-- MIGRATION NOTES (for existing databases)
+-- Run these if your database was created before these changes:
+-- ============================================================
+-- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email text DEFAULT '';
+-- ALTER TABLE applications DROP CONSTRAINT IF EXISTS applications_status_check;
+-- ALTER TABLE applications ADD CONSTRAINT applications_status_check CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn'));
+-- Then run the create policy and trigger statements above.

@@ -16,6 +16,8 @@ export default function JobDetail() {
   const [applied, setApplied] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState(null);
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState("");
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
     fetchJob();
@@ -41,7 +43,7 @@ export default function JobDetail() {
     // Fetch poster profile
     const { data: posterData } = await supabase
       .from("profiles")
-      .select("full_name, avg_rating, total_jobs")
+      .select("full_name, avg_rating, total_jobs, phone, email")
       .eq("id", jobData.posted_by)
       .single();
     setPoster(posterData);
@@ -71,6 +73,7 @@ export default function JobDetail() {
     const { error: applyError } = await supabase.from("applications").insert({
       job_id: id,
       applicant_id: user.id,
+      ...(message.trim() && { message: message.trim() }),
     });
 
     if (applyError) {
@@ -122,6 +125,22 @@ export default function JobDetail() {
     pending: C.orange,
     accepted: C.green,
     declined: C.red,
+    withdrawn: C.t4,
+  };
+
+  const handleWithdraw = async () => {
+    if (!window.confirm("Withdraw your application?")) return;
+    const { error: wErr } = await supabase
+      .from("applications")
+      .update({ status: "withdrawn" })
+      .eq("job_id", id)
+      .eq("applicant_id", user.id);
+    if (!wErr) {
+      setApplied(false);
+      setApplicationStatus(null);
+      setMessage("");
+      setShowMessage(false);
+    }
   };
 
   return (
@@ -279,9 +298,56 @@ export default function JobDetail() {
                 </div>
                 <div style={{ fontSize: 13, color: C.t3 }}>
                   {applicationStatus === "pending" && "The manager will review your application shortly."}
-                  {applicationStatus === "accepted" && "You\u2019ve been accepted for this job. Contact the manager to confirm details."}
+                  {applicationStatus === "accepted" && "You\u2019ve been accepted for this job."}
                   {applicationStatus === "declined" && "Unfortunately, the manager chose other applicants for this job."}
                 </div>
+                {applicationStatus === "accepted" && (poster?.phone || poster?.email) && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "10px 14px",
+                      background: C.green + "10",
+                      border: "1px solid " + C.green + "33",
+                      borderRadius: 10,
+                      fontSize: 13,
+                      display: "flex",
+                      gap: 16,
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span style={{ color: C.t2, fontWeight: 600 }}>Contact {poster.full_name}:</span>
+                    {poster.phone && (
+                      <a href={`tel:${poster.phone}`} style={{ color: C.green, textDecoration: "none", fontWeight: 600 }}>
+                        {poster.phone}
+                      </a>
+                    )}
+                    {poster.email && (
+                      <a href={`mailto:${poster.email}`} style={{ color: C.green, textDecoration: "none", fontWeight: 600 }}>
+                        {poster.email}
+                      </a>
+                    )}
+                  </div>
+                )}
+                {applicationStatus === "pending" && (
+                  <button
+                    onClick={handleWithdraw}
+                    style={{
+                      marginTop: 12,
+                      padding: "8px 20px",
+                      background: "transparent",
+                      color: C.red,
+                      border: "1px solid " + C.red + "44",
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    Withdraw Application
+                  </button>
+                )}
               </div>
             ) : slotsRemaining <= 0 ? (
               <div
@@ -316,6 +382,45 @@ export default function JobDetail() {
                     {error}
                   </div>
                 )}
+                <div style={{ marginBottom: 14 }}>
+                  <button
+                    onClick={() => setShowMessage(!showMessage)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: C.accent,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      padding: 0,
+                    }}
+                  >
+                    {showMessage ? "Hide message" : "Add a message (optional)"}
+                  </button>
+                  {showMessage && (
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Introduce yourself or mention relevant experience..."
+                      maxLength={500}
+                      style={{
+                        width: "100%",
+                        marginTop: 10,
+                        padding: 14,
+                        background: C.s2,
+                        color: C.t1,
+                        border: "1px solid " + C.b1,
+                        borderRadius: 12,
+                        fontSize: 14,
+                        fontFamily: "inherit",
+                        resize: "vertical",
+                        minHeight: 80,
+                        outline: "none",
+                      }}
+                    />
+                  )}
+                </div>
                 <button
                   onClick={handleApply}
                   disabled={applying}
@@ -339,6 +444,43 @@ export default function JobDetail() {
                 </button>
               </>
             )}
+          </div>
+        )}
+
+        {/* Review prompt for completed jobs */}
+        {profile?.role === "marshal" && job.status === "completed" && applicationStatus === "accepted" && (
+          <div
+            style={{
+              marginBottom: 40,
+              padding: "20px 24px",
+              background: C.accent + "10",
+              border: "1px solid " + C.accent + "33",
+              borderRadius: 16,
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 800, color: C.accent, marginBottom: 4 }}>
+              Job Completed
+            </div>
+            <p style={{ fontSize: 13, color: C.t3, marginBottom: 12 }}>
+              How was working with {poster?.full_name || "the manager"}?
+            </p>
+            <Link
+              to={`/review/${id}/${job.posted_by}`}
+              className="cta-btn"
+              style={{
+                display: "inline-block",
+                padding: "12px 28px",
+                background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+                color: "#fff",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Leave a Review
+            </Link>
           </div>
         )}
       </Section>

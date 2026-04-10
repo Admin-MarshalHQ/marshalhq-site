@@ -37,7 +37,7 @@ export default function ManagerDashboard() {
   };
 
   const liveJobs = jobs.filter((j) => j.status === "live");
-  const filledJobs = jobs.filter((j) => j.status === "filled" || j.status === "completed");
+  const pastJobs = jobs.filter((j) => ["filled", "completed", "cancelled"].includes(j.status));
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
@@ -83,7 +83,7 @@ export default function ManagerDashboard() {
           {[
             { title: "Active Jobs", value: liveJobs.length, color: C.accent },
             { title: "Total Posted", value: jobs.length, color: C.orange },
-            { title: "Completed", value: filledJobs.length, color: C.green },
+            { title: "Completed", value: pastJobs.length, color: C.green },
           ].map((card, i) => (
             <div
               key={i}
@@ -158,13 +158,13 @@ export default function ManagerDashboard() {
               </div>
             )}
 
-            {filledJobs.length > 0 && (
+            {pastJobs.length > 0 && (
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.t4, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
                   Past Jobs
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {filledJobs.map((job) => (
+                  {pastJobs.map((job) => (
                     <JobCard
                       key={job.id}
                       job={job}

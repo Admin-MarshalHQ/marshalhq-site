@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { C } from "../../lib/theme";
 import { useAuth } from "../../lib/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -32,6 +32,8 @@ const labelStyle = {
 export default function PostJob() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { id: editId } = useParams();
+  const isEdit = Boolean(editId);
 
   const [form, setForm] = useState({
     title: "",
@@ -47,7 +49,38 @@ export default function PostJob() {
     is_urgent: false,
   });
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEdit);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!editId || !user) return;
+    (async () => {
+      const { data, error: fetchErr } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("id", editId)
+        .eq("posted_by", user.id)
+        .single();
+      if (fetchErr || !data) {
+        setError("Job not found or you don't have access.");
+      } else {
+        setForm({
+          title: data.title || "",
+          production_name: data.production_name || "",
+          location: data.location || "",
+          date: data.date || "",
+          start_time: data.start_time || "07:00",
+          end_time: data.end_time || "19:00",
+          day_rate: data.day_rate?.toString() || "",
+          slots_needed: data.slots_needed?.toString() || "1",
+          description: data.description || "",
+          requirements: data.requirements || "",
+          is_urgent: data.is_urgent || false,
+        });
+      }
+      setFetching(false);
+    })();
+  }, [editId, user]);
 
   const update = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -67,7 +100,7 @@ export default function PostJob() {
 
     setLoading(true);
 
-    const { error: insertError } = await supabase.from("jobs").insert({
+    const payload = {
       title: form.title.trim(),
       production_name: form.production_name.trim(),
       location: form.location.trim(),
@@ -79,15 +112,29 @@ export default function PostJob() {
       description: form.description.trim(),
       requirements: form.requirements.trim(),
       is_urgent: form.is_urgent,
-      posted_by: user.id,
-    });
+    };
+
+    let submitError;
+    if (isEdit) {
+      const { error: e } = await supabase
+        .from("jobs")
+        .update(payload)
+        .eq("id", editId)
+        .eq("posted_by", user.id);
+      submitError = e;
+    } else {
+      const { error: e } = await supabase
+        .from("jobs")
+        .insert({ ...payload, posted_by: user.id });
+      submitError = e;
+    }
 
     setLoading(false);
 
-    if (insertError) {
-      setError(insertError.message);
+    if (submitError) {
+      setError(submitError.message);
     } else {
-      navigate("/manager/dashboard");
+      navigate(isEdit ? `/manager/job/${editId}` : "/manager/dashboard");
     }
   };
 
@@ -101,12 +148,17 @@ export default function PostJob() {
         >
           &larr; Back to Dashboard
         </Link>
-        <SectionLabel>New Job</SectionLabel>
-        <SectionTitle>Post a job</SectionTitle>
+        <SectionLabel>{isEdit ? "Edit Job" : "New Job"}</SectionLabel>
+        <SectionTitle>{isEdit ? "Edit job details" : "Post a job"}</SectionTitle>
         <p style={{ fontSize: 15, color: C.t3, marginBottom: 32 }}>
-          Fill in the details below. Your job will be visible to all marshals immediately.
+          {isEdit
+            ? "Update the job details below. Changes are saved immediately."
+            : "Fill in the details below. Your job will be visible to all marshals immediately."}
         </p>
 
+        {fetching ? (
+          <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading job...</div>
+        ) : (
         <form onSubmit={handleSubmit}>
           <div style={{ background: C.s2, borderRadius: 24, padding: 32, border: "1px solid " + C.b1 }}>
             {/* Title */}
@@ -306,10 +358,11 @@ export default function PostJob() {
                 boxShadow: "0 4px 20px #6366f144",
               }}
             >
-              {loading ? "Posting..." : "Post Job"}
+              {loading ? (isEdit ? "Saving..." : "Posting...") : (isEdit ? "Save Changes" : "Post Job")}
             </button>
           </div>
         </form>
+        )}
       </Section>
     </div>
   );

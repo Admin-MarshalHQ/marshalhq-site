@@ -13,6 +13,8 @@ export default function MarshalDashboard() {
   const [myApps, setMyApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("jobs");
+  const [filters, setFilters] = useState({ search: "", minRate: "", dateFrom: "", dateTo: "" });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -53,7 +55,24 @@ export default function MarshalDashboard() {
   const pendingApps = myApps.filter((a) => a.status === "pending").length;
   const acceptedApps = myApps.filter((a) => a.status === "accepted").length;
 
-  const statusColors = { pending: C.orange, accepted: C.green, declined: C.red };
+  const statusColors = { pending: C.orange, accepted: C.green, declined: C.red, withdrawn: C.t4 };
+  const activeApps = myApps.filter((a) => a.status !== "withdrawn");
+
+  const hasFilters = filters.search || filters.minRate || filters.dateFrom || filters.dateTo;
+  const filteredJobs = jobs.filter((j) => {
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      if (
+        !j.title?.toLowerCase().includes(q) &&
+        !j.location?.toLowerCase().includes(q) &&
+        !j.production_name?.toLowerCase().includes(q)
+      ) return false;
+    }
+    if (filters.minRate && j.day_rate < Number(filters.minRate)) return false;
+    if (filters.dateFrom && j.date < filters.dateFrom) return false;
+    if (filters.dateTo && j.date > filters.dateTo) return false;
+    return true;
+  });
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
@@ -74,7 +93,7 @@ export default function MarshalDashboard() {
           }}
         >
           {[
-            { title: "Available Jobs", value: jobs.length, color: C.accent },
+            { title: "Available Jobs", value: hasFilters ? `${filteredJobs.length} / ${jobs.length}` : jobs.length, color: C.accent },
             { title: "Pending Apps", value: pendingApps, color: C.orange },
             { title: "Accepted", value: acceptedApps, color: C.green },
           ].map((card, i) => (
@@ -108,7 +127,7 @@ export default function MarshalDashboard() {
         >
           {[
             { key: "jobs", label: "Available Jobs" },
-            { key: "applications", label: `My Applications (${myApps.length})` },
+            { key: "applications", label: `My Applications (${activeApps.length})` },
           ].map((t) => (
             <button
               key={t.key}
@@ -131,11 +150,143 @@ export default function MarshalDashboard() {
           ))}
         </div>
 
+        {/* Filters (jobs tab only) */}
+        {tab === "jobs" && (
+          <div style={{ marginBottom: 16 }}>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                background: "none",
+                border: "none",
+                color: hasFilters ? C.accent : C.t4,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                padding: 0,
+                marginBottom: showFilters ? 12 : 0,
+              }}
+            >
+              {showFilters ? "Hide filters" : "Filter jobs"}
+              {hasFilters && !showFilters && " (active)"}
+            </button>
+            {showFilters && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                  gap: 10,
+                  background: C.s2,
+                  borderRadius: 14,
+                  padding: 16,
+                  border: "1px solid " + C.b1,
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Search title, location..."
+                  value={filters.search}
+                  onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "10px 14px",
+                    background: C.s3,
+                    color: C.t1,
+                    border: "1px solid " + C.b1,
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontFamily: "inherit",
+                    outline: "none",
+                  }}
+                />
+                <div>
+                  <div style={{ fontSize: 11, color: C.t4, fontWeight: 600, marginBottom: 4 }}>Min rate</div>
+                  <input
+                    type="number"
+                    placeholder="e.g. 150"
+                    value={filters.minRate}
+                    onChange={(e) => setFilters((f) => ({ ...f, minRate: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      background: C.s3,
+                      color: C.t1,
+                      border: "1px solid " + C.b1,
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontFamily: "inherit",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.t4, fontWeight: 600, marginBottom: 4 }}>From date</div>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={(e) => setFilters((f) => ({ ...f, dateFrom: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      background: C.s3,
+                      color: C.t1,
+                      border: "1px solid " + C.b1,
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontFamily: "inherit",
+                      outline: "none",
+                      colorScheme: "dark",
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.t4, fontWeight: 600, marginBottom: 4 }}>To date</div>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={(e) => setFilters((f) => ({ ...f, dateTo: e.target.value }))}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      background: C.s3,
+                      color: C.t1,
+                      border: "1px solid " + C.b1,
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontFamily: "inherit",
+                      outline: "none",
+                      colorScheme: "dark",
+                    }}
+                  />
+                </div>
+                {hasFilters && (
+                  <button
+                    onClick={() => setFilters({ search: "", minRate: "", dateFrom: "", dateTo: "" })}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: C.red,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      padding: "8px 0",
+                      textAlign: "left",
+                    }}
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading...</div>
         ) : tab === "jobs" ? (
           <>
-            {jobs.length === 0 ? (
+            {filteredJobs.length === 0 ? (
               <div
                 style={{
                   padding: 40,
@@ -146,14 +297,16 @@ export default function MarshalDashboard() {
                 }}
               >
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{"\ud83d\udcad"}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: C.t2 }}>No jobs posted yet</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: C.t2 }}>
+                  {hasFilters ? "No jobs match your filters" : "No jobs posted yet"}
+                </div>
                 <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
-                  New jobs will appear here as managers post them.
+                  {hasFilters ? "Try adjusting your search criteria." : "New jobs will appear here as managers post them."}
                 </p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {jobs.map((job) => (
+                {filteredJobs.map((job) => (
                   <JobCard key={job.id} job={job} linkTo={`/job/${job.id}`} />
                 ))}
               </div>
@@ -161,7 +314,7 @@ export default function MarshalDashboard() {
           </>
         ) : (
           <>
-            {myApps.length === 0 ? (
+            {activeApps.length === 0 ? (
               <div
                 style={{
                   padding: 40,
@@ -179,7 +332,7 @@ export default function MarshalDashboard() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {myApps.map((app) => (
+                {activeApps.map((app) => (
                   <Link
                     key={app.id}
                     to={`/job/${app.job_id}`}
@@ -205,20 +358,38 @@ export default function MarshalDashboard() {
                             {app.jobs?.day_rate && ` \u00b7 \u00a3${app.jobs.day_rate}`}
                           </div>
                         </div>
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            padding: "4px 10px",
-                            borderRadius: 8,
-                            background: (statusColors[app.status] || C.t4) + "18",
-                            color: statusColors[app.status] || C.t4,
-                            textTransform: "uppercase",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {app.status}
-                        </span>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                          {app.status === "accepted" && app.jobs?.status === "completed" && (
+                            <Link
+                              to={`/review/${app.job_id}/${app.jobs.posted_by}`}
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: C.accent,
+                                textDecoration: "none",
+                                padding: "4px 10px",
+                                borderRadius: 8,
+                                background: C.accent + "18",
+                              }}
+                            >
+                              Review
+                            </Link>
+                          )}
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: "4px 10px",
+                              borderRadius: 8,
+                              background: (statusColors[app.status] || C.t4) + "18",
+                              color: statusColors[app.status] || C.t4,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {app.status}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>

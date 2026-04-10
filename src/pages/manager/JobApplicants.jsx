@@ -40,7 +40,7 @@ export default function JobApplicants() {
       // Fetch applications with applicant profiles
       const { data: apps, error: appsError } = await supabase
         .from("applications")
-        .select("*, profiles:applicant_id(full_name, location, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
+        .select("*, profiles:applicant_id(full_name, location, phone, email, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
         .eq("job_id", id)
         .order("applied_at", { ascending: true });
 
@@ -159,12 +159,88 @@ export default function JobApplicants() {
         <div style={{ marginBottom: 32 }}>
           <SectionLabel>Applicants</SectionLabel>
           <SectionTitle>{job.title}</SectionTitle>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: C.t3 }}>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: C.t3, marginBottom: 12 }}>
             <span>{"\ud83d\udccd"} {job.location}</span>
             <span>{"\ud83d\udcc5"} {new Date(job.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
             <span>{"\ud83d\udcb7"} &pound;{job.day_rate}/day</span>
             <span>{"\ud83d\udc65"} {slotsRemaining} of {job.slots_needed} slots remaining</span>
           </div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            {job.status === "live" && (
+              <Link
+                to={`/manager/edit/${id}`}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.accent,
+                  textDecoration: "none",
+                }}
+              >
+                Edit Job
+              </Link>
+            )}
+            {job.status === "live" && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Cancel this job? This cannot be undone.")) return;
+                  await supabase.from("jobs").update({ status: "cancelled" }).eq("id", id);
+                  setJob((prev) => ({ ...prev, status: "cancelled" }));
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: C.red,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: 0,
+                }}
+              >
+                Cancel Job
+              </button>
+            )}
+            {job.status === "live" && acceptedCount > 0 && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Mark this job as completed?")) return;
+                  await supabase.from("jobs").update({ status: "completed" }).eq("id", id);
+                  setJob((prev) => ({ ...prev, status: "completed" }));
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: C.green,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: 0,
+                }}
+              >
+                Mark Complete
+              </button>
+            )}
+          </div>
+
+          {/* Status badge for non-live jobs */}
+          {job.status !== "live" && (
+            <div
+              style={{
+                display: "inline-block",
+                marginTop: 8,
+                padding: "4px 10px",
+                borderRadius: 8,
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                background: job.status === "completed" ? C.green + "18" : job.status === "cancelled" ? C.red + "18" : C.t4 + "18",
+                color: job.status === "completed" ? C.green : job.status === "cancelled" ? C.red : C.t4,
+              }}
+            >
+              {job.status}
+            </div>
+          )}
         </div>
 
         {/* Stats bar */}
@@ -269,49 +345,108 @@ export default function JobApplicants() {
                         {certBadge(p?.has_first_aid, "First Aid")}
                         {certBadge(p?.has_own_transport, "Own Transport")}
                       </div>
+
+                      {app.message && (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            padding: "10px 14px",
+                            background: C.s3,
+                            borderRadius: 10,
+                            fontSize: 13,
+                            color: C.t3,
+                            fontStyle: "italic",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          "{app.message}"
+                        </div>
+                      )}
+
+                      {app.status === "accepted" && (p?.phone || p?.email) && (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            padding: "10px 14px",
+                            background: C.green + "10",
+                            border: "1px solid " + C.green + "33",
+                            borderRadius: 10,
+                            fontSize: 13,
+                            display: "flex",
+                            gap: 16,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {p.phone && (
+                            <a href={`tel:${p.phone}`} style={{ color: C.green, textDecoration: "none", fontWeight: 600 }}>
+                              {p.phone}
+                            </a>
+                          )}
+                          {p.email && (
+                            <a href={`mailto:${p.email}`} style={{ color: C.green, textDecoration: "none", fontWeight: 600 }}>
+                              {p.email}
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Action buttons */}
-                    {app.status === "pending" && slotsRemaining > 0 && (
-                      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                        <button
-                          onClick={() => updateStatus(app.id, "accepted")}
-                          disabled={updating === app.id}
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0, flexDirection: "column", alignItems: "flex-end" }}>
+                      {app.status === "pending" && slotsRemaining > 0 && (
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={() => updateStatus(app.id, "accepted")}
+                            disabled={updating === app.id}
+                            style={{
+                              padding: "10px 20px",
+                              background: C.green,
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: 10,
+                              fontSize: 13,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontFamily: "inherit",
+                              opacity: updating === app.id ? 0.6 : 1,
+                            }}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => updateStatus(app.id, "declined")}
+                            disabled={updating === app.id}
+                            style={{
+                              padding: "10px 20px",
+                              background: "transparent",
+                              color: C.red,
+                              border: "1px solid " + C.red + "44",
+                              borderRadius: 10,
+                              fontSize: 13,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              fontFamily: "inherit",
+                              opacity: updating === app.id ? 0.6 : 1,
+                            }}
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+                      {job.status === "completed" && app.status === "accepted" && (
+                        <Link
+                          to={`/review/${id}/${app.applicant_id}`}
                           style={{
-                            padding: "10px 20px",
-                            background: C.green,
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 10,
                             fontSize: 13,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                            opacity: updating === app.id ? 0.6 : 1,
+                            fontWeight: 600,
+                            color: C.accent,
+                            textDecoration: "none",
                           }}
                         >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => updateStatus(app.id, "declined")}
-                          disabled={updating === app.id}
-                          style={{
-                            padding: "10px 20px",
-                            background: "transparent",
-                            color: C.red,
-                            border: "1px solid " + C.red + "44",
-                            borderRadius: 10,
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                            opacity: updating === app.id ? 0.6 : 1,
-                          }}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    )}
+                          Leave Review
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

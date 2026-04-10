@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
         id: userId,
         role: meta.role || "marshal",
         full_name: meta.full_name || fullUser?.email || "",
+        email: fullUser?.email || "",
       })
       .select()
       .single();

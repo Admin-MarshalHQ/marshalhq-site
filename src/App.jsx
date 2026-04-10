@@ -12,6 +12,7 @@ import PostJob from "./pages/manager/PostJob";
 import JobApplicants from "./pages/manager/JobApplicants";
 import JobDetail from "./pages/JobDetail";
 import MarshalProfile from "./pages/marshal/Profile";
+import ReviewPage from "./pages/ReviewPage";
 import NotFound from "./pages/NotFound";
 import LandingNavbar from "./components/LandingNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -124,6 +125,14 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/manager/edit/:id"
+                    element={
+                      <ProtectedRoute role="manager">
+                        <PostJob />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/manager/job/:id"
                     element={
                       <ProtectedRoute role="manager">
@@ -136,6 +145,14 @@ export default function App() {
                     element={
                       <ProtectedRoute>
                         <JobDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/review/:jobId/:userId"
+                    element={
+                      <ProtectedRoute>
+                        <ReviewPage />
                       </ProtectedRoute>
                     }
                   />
