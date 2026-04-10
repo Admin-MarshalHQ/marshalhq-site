@@ -40,10 +40,10 @@ export default function JobDetail() {
     }
     setJob(jobData);
 
-    // Fetch poster profile
+    // Fetch poster profile (public fields only)
     const { data: posterData } = await supabase
       .from("profiles")
-      .select("full_name, avg_rating, total_jobs, phone, email")
+      .select("full_name, avg_rating, total_jobs")
       .eq("id", jobData.posted_by)
       .single();
     setPoster(posterData);
@@ -60,6 +60,18 @@ export default function JobDetail() {
       if (appData) {
         setApplied(true);
         setApplicationStatus(appData.status);
+
+        // Only fetch poster contact info if accepted
+        if (appData.status === "accepted") {
+          const { data: contactData } = await supabase
+            .from("profiles")
+            .select("phone, email")
+            .eq("id", jobData.posted_by)
+            .single();
+          if (contactData) {
+            setPoster((prev) => ({ ...prev, ...contactData }));
+          }
+        }
       }
     }
 

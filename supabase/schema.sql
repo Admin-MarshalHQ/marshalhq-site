@@ -141,7 +141,8 @@ create policy "Job owner can update application status"
 create policy "Marshals can withdraw own pending applications"
   on applications for update
   to authenticated
-  using (applicant_id = auth.uid() and status = 'pending');
+  using (applicant_id = auth.uid() and status = 'pending')
+  with check (applicant_id = auth.uid() and status = 'withdrawn');
 
 -- 9. RLS Policies for reviews
 create policy "Anyone authenticated can view reviews"
@@ -152,7 +153,27 @@ create policy "Anyone authenticated can view reviews"
 create policy "Users can insert reviews for completed jobs"
   on reviews for insert
   to authenticated
-  with check (reviewer_id = auth.uid());
+  with check (
+    reviewer_id = auth.uid()
+    and exists (select 1 from jobs where id = job_id and status = 'completed')
+    and (
+      -- Marshal reviewing the manager who posted the job
+      exists (
+        select 1 from applications a
+        join jobs j on j.id = a.job_id
+        where a.job_id = job_id and a.applicant_id = auth.uid()
+        and a.status = 'accepted' and reviewed_user_id = j.posted_by
+      )
+      or
+      -- Manager reviewing an accepted marshal
+      exists (
+        select 1 from jobs j
+        join applications a on a.job_id = j.id
+        where j.id = job_id and j.posted_by = auth.uid()
+        and a.applicant_id = reviewed_user_id and a.status = 'accepted'
+      )
+    )
+  );
 
 -- 10. Rating aggregation trigger
 -- Automatically updates avg_rating and total_jobs on profiles when a review is inserted
@@ -171,6 +192,24 @@ create trigger on_review_insert
   after insert on reviews
   for each row
   execute function update_user_rating();
+
+-- 11. Protect sensitive profile fields from direct user modification
+-- Prevents users from changing their own role, ratings, or job stats
+create or replace function protect_profile_fields()
+returns trigger as $$
+begin
+  NEW.role := OLD.role;
+  NEW.avg_rating := OLD.avg_rating;
+  NEW.total_jobs := OLD.total_jobs;
+  NEW.reliability_pct := OLD.reliability_pct;
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger protect_profile_fields_trigger
+  before update on profiles
+  for each row
+  execute function protect_profile_fields();
 
 -- ============================================================
 -- MIGRATION NOTES (for existing databases)

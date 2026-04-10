@@ -37,14 +37,31 @@ export default function JobApplicants() {
       }
       setJob(jobData);
 
-      // Fetch applications with applicant profiles
+      // Fetch applications with applicant profiles (public fields only)
       const { data: apps, error: appsError } = await supabase
         .from("applications")
-        .select("*, profiles:applicant_id(full_name, location, phone, email, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
+        .select("*, profiles:applicant_id(full_name, location, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
         .eq("job_id", id)
         .order("applied_at", { ascending: true });
 
       if (appsError) console.error("Error fetching applicants:", appsError.message);
+
+      // Fetch contact info only for accepted applicants
+      const accepted = (apps || []).filter((a) => a.status === "accepted");
+      if (accepted.length > 0) {
+        const ids = accepted.map((a) => a.applicant_id);
+        const { data: contacts } = await supabase
+          .from("profiles")
+          .select("id, phone, email")
+          .in("id", ids);
+        const contactMap = {};
+        (contacts || []).forEach((c) => { contactMap[c.id] = c; });
+        (apps || []).forEach((a) => {
+          if (contactMap[a.applicant_id]) {
+            a.profiles = { ...a.profiles, ...contactMap[a.applicant_id] };
+          }
+        });
+      }
       setApplicants(apps || []);
     } catch (err) {
       console.error("Job applicants fetch error:", err);
