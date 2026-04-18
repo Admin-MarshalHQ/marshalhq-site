@@ -32,10 +32,12 @@ export default function Navbar() {
         style={{
           maxWidth: 1100,
           margin: "0 auto",
-          padding: "16px 24px",
+          padding: "14px 16px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 8,
+          flexWrap: "nowrap",
         }}
       >
         <Link to="/" style={{ textDecoration: "none" }}>

@@ -195,7 +195,7 @@ export default function PostJob() {
             </div>
 
             {/* Date + Times row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 18 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 18 }}>
               <div>
                 <label style={labelStyle}>Date *</label>
                 <input
