@@ -12,10 +12,12 @@ import PostJob from "./pages/manager/PostJob";
 import JobApplicants from "./pages/manager/JobApplicants";
 import JobDetail from "./pages/JobDetail";
 import MarshalProfile from "./pages/marshal/Profile";
+import MarshalPublicProfile from "./pages/MarshalPublicProfile";
 import ReviewPage from "./pages/ReviewPage";
 import NotFound from "./pages/NotFound";
 import LandingNavbar from "./components/LandingNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function AppLayout({ children }) {
   return (
@@ -48,7 +50,7 @@ function AppLayout({ children }) {
         ::-webkit-scrollbar-thumb{background:${C.b1};border-radius:3px}
         ::-webkit-scrollbar-thumb:hover{background:${C.b2}}
       `}</style>
-      {children}
+      <ErrorBoundary>{children}</ErrorBoundary>
     </div>
   );
 }
@@ -152,6 +154,14 @@ export default function App() {
                     element={
                       <ProtectedRoute>
                         <JobDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/marshal/:id"
+                    element={
+                      <ProtectedRoute>
+                        <MarshalPublicProfile />
                       </ProtectedRoute>
                     }
                   />

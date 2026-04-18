@@ -14,11 +14,15 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
       <div
         className="card-hover"
         style={{
-          background: C.s2,
+          background: job.is_urgent
+            ? `linear-gradient(180deg, ${C.red}10, ${C.s2} 60%)`
+            : C.s2,
           borderRadius: 14,
           padding: "20px 22px",
-          border: "1px solid " + (job.is_urgent ? "#ef444433" : C.b1),
+          border: "1px solid " + (job.is_urgent ? C.red + "55" : C.b1),
+          boxShadow: job.is_urgent ? `0 0 0 1px ${C.red}22` : "none",
           cursor: "pointer",
+          position: "relative",
         }}
       >
         {/* Top row: title + rate */}

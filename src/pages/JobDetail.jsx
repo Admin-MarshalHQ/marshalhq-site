@@ -5,6 +5,8 @@ import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 import { Section, SectionLabel } from "../components/ui/Section";
+import { Loading, ErrorState } from "../components/StateView";
+import { enqueueNotification } from "../lib/notify";
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -93,6 +95,12 @@ export default function JobDetail() {
     } else {
       setApplied(true);
       setApplicationStatus("pending");
+      enqueueNotification({
+        recipientId: job.posted_by,
+        actorId: user.id,
+        type: "application_received",
+        jobId: id,
+      });
     }
 
     setApplying(false);
@@ -104,8 +112,8 @@ export default function JobDetail() {
     return (
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
-        <Section style={{ paddingTop: 100, textAlign: "center" }}>
-          <p style={{ color: C.t3 }}>Loading job...</p>
+        <Section style={{ paddingTop: 100 }}>
+          <Loading label="Loading job..." />
         </Section>
       </div>
     );
@@ -115,11 +123,13 @@ export default function JobDetail() {
     return (
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
-        <Section style={{ paddingTop: 100, textAlign: "center" }}>
-          <p style={{ color: C.t3 }}>{error || "Job not found."}</p>
-          <Link to={backPath} style={{ color: C.accent, fontSize: 14 }}>
-            Back to Dashboard
-          </Link>
+        <Section style={{ paddingTop: 100 }}>
+          <ErrorState message={error || "Job not found."} onRetry={fetchJob} />
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Link to={backPath} style={{ color: C.accent, fontSize: 14 }}>
+              Back to Dashboard
+            </Link>
+          </div>
         </Section>
       </div>
     );

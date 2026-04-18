@@ -6,11 +6,14 @@ import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import JobCard from "../../components/JobCard";
 import { Section, SectionLabel, SectionTitle } from "../../components/ui/Section";
+import { Loading, Empty, ErrorState } from "../../components/StateView";
 
 export default function ManagerDashboard() {
   const { user, profile } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [pendingReviews, setPendingReviews] = useState([]);
 
   useEffect(() => {
     fetchJobs();
@@ -19,6 +22,7 @@ export default function ManagerDashboard() {
   const fetchJobs = async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(null);
 
     try {
       const { data, error } = await supabase
@@ -27,10 +31,40 @@ export default function ManagerDashboard() {
         .eq("posted_by", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) console.error("Error fetching jobs:", error.message);
+      if (error) throw error;
       setJobs(data || []);
+
+      // Pending reviews: completed jobs where I have accepted marshals I haven't reviewed.
+      const completedIds = (data || [])
+        .filter((j) => j.status === "completed")
+        .map((j) => j.id);
+      if (completedIds.length > 0) {
+        const [{ data: acceptedApps }, { data: myReviews }] = await Promise.all([
+          supabase
+            .from("applications")
+            .select("job_id, applicant_id, profiles:applicant_id(full_name)")
+            .in("job_id", completedIds)
+            .eq("status", "accepted"),
+          supabase
+            .from("reviews")
+            .select("job_id, reviewed_user_id")
+            .eq("reviewer_id", user.id)
+            .in("job_id", completedIds),
+        ]);
+        const reviewed = new Set(
+          (myReviews || []).map((r) => `${r.job_id}:${r.reviewed_user_id}`)
+        );
+        setPendingReviews(
+          (acceptedApps || []).filter(
+            (a) => !reviewed.has(`${a.job_id}:${a.applicant_id}`)
+          )
+        );
+      } else {
+        setPendingReviews([]);
+      }
     } catch (err) {
       console.error("Manager dashboard fetch error:", err);
+      setLoadError(err?.message || "Could not load your jobs.");
     }
 
     setLoading(false);
@@ -102,9 +136,56 @@ export default function ManagerDashboard() {
           ))}
         </div>
 
+        {/* Pending reviews strip */}
+        {pendingReviews.length > 0 && (
+          <div
+            style={{
+              background: C.accent + "10",
+              border: "1px solid " + C.accent + "44",
+              borderRadius: 14,
+              padding: "14px 18px",
+              marginBottom: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.accent, marginBottom: 2 }}>
+                {pendingReviews.length === 1
+                  ? `Review ${pendingReviews[0].profiles?.full_name || "your marshal"}`
+                  : `${pendingReviews.length} marshals waiting for your review`}
+              </div>
+              <div style={{ fontSize: 12, color: C.t3 }}>
+                Rate the marshals you booked on completed jobs.
+              </div>
+            </div>
+            <Link
+              to={`/review/${pendingReviews[0].job_id}/${pendingReviews[0].applicant_id}`}
+              style={{
+                padding: "10px 20px",
+                background: C.accent,
+                color: C.bg,
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                textDecoration: "none",
+                letterSpacing: 0.5,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Leave review
+            </Link>
+          </div>
+        )}
+
         {/* Job list */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading...</div>
+          <Loading />
+        ) : loadError ? (
+          <ErrorState message={loadError} onRetry={fetchJobs} />
         ) : jobs.length === 0 ? (
           <div
             style={{

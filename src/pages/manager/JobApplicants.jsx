@@ -5,6 +5,8 @@ import { useAuth } from "../../lib/AuthContext";
 import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import { Section, SectionLabel, SectionTitle } from "../../components/ui/Section";
+import { Loading, Empty, ErrorState } from "../../components/StateView";
+import { enqueueNotification } from "../../lib/notify";
 
 export default function JobApplicants() {
   const { id } = useParams();
@@ -13,13 +15,32 @@ export default function JobApplicants() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, [id]);
 
+  // Realtime: refetch the applicant list when applications change for this job.
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`applicants-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications", filter: `job_id=eq.${id}` },
+        () => fetchData()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
   const fetchData = async () => {
     setLoading(true);
+    setLoadError(null);
 
     try {
       // Fetch job
@@ -32,6 +53,7 @@ export default function JobApplicants() {
 
       if (jobError || !jobData) {
         console.error("Error fetching job:", jobError?.message);
+        setLoadError(jobError?.message || "Job not found.");
         setLoading(false);
         return;
       }
@@ -109,9 +131,69 @@ export default function JobApplicants() {
           .eq("id", id);
         setJob((prev) => ({ ...prev, slots_filled: newFilled }));
       }
+
+      // Notify the marshal about the decision
+      const app = applicants.find((a) => a.id === applicationId);
+      if (app) {
+        enqueueNotification({
+          recipientId: app.applicant_id,
+          actorId: user.id,
+          type: newStatus === "accepted" ? "application_accepted" : "application_declined",
+          jobId: id,
+        });
+      }
     }
 
     setUpdating(null);
+  };
+
+  const toggleNoShow = async (application) => {
+    const next = !application.no_show;
+    const verb = next ? "mark as no-show" : "clear no-show flag for";
+    if (!window.confirm(`${next ? "Mark" : "Clear"} ${application.profiles?.full_name || "this marshal"} as no-show? This affects their reliability %.`)) return;
+    const { error } = await supabase
+      .from("applications")
+      .update({ no_show: next })
+      .eq("id", application.id);
+    if (error) {
+      alert(`Could not ${verb} them: ${error.message}`);
+      return;
+    }
+    setApplicants((prev) =>
+      prev.map((a) => (a.id === application.id ? { ...a, no_show: next } : a))
+    );
+  };
+
+  const completeJob = async () => {
+    if (!window.confirm("Mark this job as completed?")) return;
+    const { error } = await supabase
+      .from("jobs")
+      .update({ status: "completed" })
+      .eq("id", id);
+    if (error) {
+      alert(`Could not mark complete: ${error.message}`);
+      return;
+    }
+    setJob((prev) => ({ ...prev, status: "completed" }));
+    const accepted = applicants.filter((a) => a.status === "accepted");
+    // Notify each accepted marshal to leave a review of the manager (actor = manager)
+    accepted.forEach((a) => {
+      enqueueNotification({
+        recipientId: a.applicant_id,
+        actorId: user.id,
+        type: "job_completed",
+        jobId: id,
+      });
+    });
+    // Also notify the manager themselves with each marshal as the review target
+    accepted.forEach((a) => {
+      enqueueNotification({
+        recipientId: user.id,
+        actorId: a.applicant_id,
+        type: "job_completed",
+        jobId: id,
+      });
+    });
   };
 
   const certBadge = (has, label) => {
@@ -136,8 +218,8 @@ export default function JobApplicants() {
     return (
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
-        <Section style={{ paddingTop: 100, textAlign: "center" }}>
-          <p style={{ color: C.t3 }}>Loading...</p>
+        <Section style={{ paddingTop: 100 }}>
+          <Loading />
         </Section>
       </div>
     );
@@ -147,11 +229,16 @@ export default function JobApplicants() {
     return (
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
-        <Section style={{ paddingTop: 100, textAlign: "center" }}>
-          <p style={{ color: C.t3 }}>Job not found or you don't have access.</p>
-          <Link to="/manager/dashboard" style={{ color: C.accent, fontSize: 14 }}>
-            Back to Dashboard
-          </Link>
+        <Section style={{ paddingTop: 100 }}>
+          <ErrorState
+            message={loadError || "Job not found or you don't have access."}
+            onRetry={fetchData}
+          />
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Link to="/manager/dashboard" style={{ color: C.accent, fontSize: 14 }}>
+              Back to Dashboard
+            </Link>
+          </div>
         </Section>
       </div>
     );
@@ -175,6 +262,24 @@ export default function JobApplicants() {
         {/* Job summary */}
         <div style={{ marginBottom: 32 }}>
           <SectionLabel>Applicants</SectionLabel>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+            {job.is_urgent && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "4px 10px",
+                  borderRadius: 8,
+                  background: C.red + "20",
+                  color: C.red,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                Urgent
+              </span>
+            )}
+          </div>
           <SectionTitle>{job.title}</SectionTitle>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: C.t3, marginBottom: 12 }}>
             <span>{"\ud83d\udccd"} {job.location}</span>
@@ -219,11 +324,7 @@ export default function JobApplicants() {
             )}
             {job.status === "live" && acceptedCount > 0 && (
               <button
-                onClick={async () => {
-                  if (!window.confirm("Mark this job as completed?")) return;
-                  await supabase.from("jobs").update({ status: "completed" }).eq("id", id);
-                  setJob((prev) => ({ ...prev, status: "completed" }));
-                }}
+                onClick={completeJob}
                 style={{
                   background: "none",
                   border: "none",
@@ -278,20 +379,10 @@ export default function JobApplicants() {
 
         {/* Applicant list */}
         {applicants.length === 0 ? (
-          <div
-            style={{
-              padding: 40,
-              background: C.s2,
-              borderRadius: 20,
-              border: "1px solid " + C.b1,
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>No applicants yet</div>
-            <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
-              Applicants will appear here when marshals apply for this job.
-            </p>
-          </div>
+          <Empty
+            title="No applicants yet"
+            hint="Applicants will appear here when marshals apply for this job."
+          />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {applicants.map((app) => {
@@ -312,10 +403,19 @@ export default function JobApplicants() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: 16 }}>
                     {/* Applicant info */}
                     <div style={{ flex: 1, minWidth: 200 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: C.t1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                        <Link
+                          to={`/marshal/${app.applicant_id}`}
+                          style={{
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: C.t1,
+                            textDecoration: "none",
+                            borderBottom: "1px dashed " + C.b2,
+                          }}
+                        >
                           {p?.full_name || "Unknown"}
-                        </div>
+                        </Link>
                         <span
                           style={{
                             fontSize: 11,
@@ -329,6 +429,21 @@ export default function JobApplicants() {
                         >
                           {app.status}
                         </span>
+                        {app.no_show && (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: "3px 8px",
+                              borderRadius: 6,
+                              background: C.red + "18",
+                              color: C.red,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            No-show
+                          </span>
+                        )}
                       </div>
 
                       {p?.location && (
@@ -450,17 +565,34 @@ export default function JobApplicants() {
                         </div>
                       )}
                       {job.status === "completed" && app.status === "accepted" && (
-                        <Link
-                          to={`/review/${id}/${app.applicant_id}`}
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.accent,
-                            textDecoration: "none",
-                          }}
-                        >
-                          Leave Review
-                        </Link>
+                        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                          <Link
+                            to={`/review/${id}/${app.applicant_id}`}
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: C.accent,
+                              textDecoration: "none",
+                            }}
+                          >
+                            Leave Review
+                          </Link>
+                          <button
+                            onClick={() => toggleNoShow(app)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: app.no_show ? C.green : C.red,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              fontFamily: "inherit",
+                              padding: 0,
+                            }}
+                          >
+                            {app.no_show ? "Clear no-show" : "Mark no-show"}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

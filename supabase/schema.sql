@@ -28,6 +28,7 @@ create table if not exists profiles (
   avg_rating numeric(3,2) default 0,
   total_jobs integer default 0,
   reliability_pct integer default 100,
+  no_shows integer default 0,
   created_at timestamptz default now()
 );
 
@@ -58,6 +59,7 @@ create table if not exists applications (
   applicant_id uuid references profiles(id) on delete cascade not null,
   status text not null default 'pending' check (status in ('pending', 'accepted', 'declined', 'withdrawn')),
   message text default '',
+  no_show boolean default false,
   applied_at timestamptz default now(),
   unique(job_id, applicant_id)
 );
@@ -202,6 +204,7 @@ begin
   NEW.avg_rating := OLD.avg_rating;
   NEW.total_jobs := OLD.total_jobs;
   NEW.reliability_pct := OLD.reliability_pct;
+  NEW.no_shows := OLD.no_shows;
   return NEW;
 end;
 $$ language plpgsql;
@@ -211,6 +214,129 @@ create trigger protect_profile_fields_trigger
   for each row
   execute function protect_profile_fields();
 
+-- 12. Reliability % recompute
+-- Keeps profiles.reliability_pct and profiles.no_shows in sync with the
+-- applications.no_show flag. Fires when a manager toggles no_show on an
+-- accepted application.
+create or replace function recompute_reliability()
+returns trigger as $$
+declare
+  target_id uuid := coalesce(NEW.applicant_id, OLD.applicant_id);
+  no_show_count integer;
+  completed_count integer;
+begin
+  select count(*) into no_show_count
+    from applications
+    where applicant_id = target_id and status = 'accepted' and no_show = true;
+
+  select count(*) into completed_count
+    from applications a
+    join jobs j on j.id = a.job_id
+    where a.applicant_id = target_id and a.status = 'accepted' and j.status = 'completed';
+
+  -- Temporarily bypass protect_profile_fields_trigger via security definer
+  update profiles set
+    no_shows = no_show_count,
+    reliability_pct = case
+      when completed_count = 0 then 100
+      else greatest(0, round(100.0 * (completed_count - no_show_count) / completed_count))::int
+    end
+  where id = target_id;
+
+  return NEW;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_application_no_show_change
+  after update of no_show on applications
+  for each row
+  when (OLD.no_show is distinct from NEW.no_show)
+  execute function recompute_reliability();
+
+-- Also recompute when a job's status flips to 'completed' so total-denominator changes take effect
+create or replace function recompute_reliability_on_job_status()
+returns trigger as $$
+declare
+  applicant_row record;
+begin
+  if NEW.status = 'completed' and (OLD.status is distinct from NEW.status) then
+    for applicant_row in
+      select applicant_id from applications where job_id = NEW.id and status = 'accepted'
+    loop
+      perform recompute_reliability_for_user(applicant_row.applicant_id);
+    end loop;
+  end if;
+  return NEW;
+end;
+$$ language plpgsql security definer;
+
+create or replace function recompute_reliability_for_user(target_id uuid)
+returns void as $$
+declare
+  no_show_count integer;
+  completed_count integer;
+begin
+  select count(*) into no_show_count
+    from applications
+    where applicant_id = target_id and status = 'accepted' and no_show = true;
+
+  select count(*) into completed_count
+    from applications a
+    join jobs j on j.id = a.job_id
+    where a.applicant_id = target_id and a.status = 'accepted' and j.status = 'completed';
+
+  update profiles set
+    no_shows = no_show_count,
+    reliability_pct = case
+      when completed_count = 0 then 100
+      else greatest(0, round(100.0 * (completed_count - no_show_count) / completed_count))::int
+    end
+  where id = target_id;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_job_status_completed
+  after update of status on jobs
+  for each row
+  execute function recompute_reliability_on_job_status();
+
+-- 13. Notifications queue
+-- Client code inserts rows here; an Edge Function (or pg_net cron) reads and
+-- sends email via Resend. Decouples UI from email provider.
+create table if not exists notifications (
+  id uuid default gen_random_uuid() primary key,
+  recipient_id uuid references profiles(id) on delete cascade not null,
+  type text not null check (type in (
+    'application_received',
+    'application_accepted',
+    'application_declined',
+    'job_completed',
+    'review_received'
+  )),
+  job_id uuid references jobs(id) on delete set null,
+  actor_id uuid references profiles(id) on delete set null,
+  payload jsonb default '{}'::jsonb,
+  sent_at timestamptz,
+  error text,
+  created_at timestamptz default now()
+);
+
+alter table notifications enable row level security;
+
+-- Users can only read their own notification history; inserts are from the
+-- app client acting on behalf of authenticated actors (the RLS check ensures
+-- the actor is the current user so a manager can't spoof a notification as
+-- if it came from another user).
+create policy "Users view own notifications"
+  on notifications for select
+  to authenticated
+  using (recipient_id = auth.uid());
+
+create policy "Authenticated users insert notifications"
+  on notifications for insert
+  to authenticated
+  with check (actor_id is null or actor_id = auth.uid());
+
 -- ============================================================
 -- MIGRATION NOTES (for existing databases)
 -- Run these if your database was created before these changes:
@@ -218,4 +344,6 @@ create trigger protect_profile_fields_trigger
 -- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email text DEFAULT '';
 -- ALTER TABLE applications DROP CONSTRAINT IF EXISTS applications_status_check;
 -- ALTER TABLE applications ADD CONSTRAINT applications_status_check CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn'));
--- Then run the create policy and trigger statements above.
+-- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS no_shows integer DEFAULT 0;
+-- ALTER TABLE applications ADD COLUMN IF NOT EXISTS no_show boolean DEFAULT false;
+-- Then run the create policy, trigger, and notifications table statements above.

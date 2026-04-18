@@ -5,6 +5,8 @@ import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 import { Section, SectionLabel, SectionTitle } from "../components/ui/Section";
+import { Loading } from "../components/StateView";
+import { enqueueNotification } from "../lib/notify";
 
 const QUICK_TAGS = ["Punctual", "Professional", "Great with public", "Hard worker", "Would rebook"];
 
@@ -97,6 +99,14 @@ export default function ReviewPage() {
         .eq("id", userId);
     }
 
+    enqueueNotification({
+      recipientId: userId,
+      actorId: user.id,
+      type: "review_received",
+      jobId,
+      payload: { rating },
+    });
+
     setSubmitting(false);
     navigate(profile?.role === "manager" ? `/manager/job/${jobId}` : "/marshal/dashboard");
   };
@@ -107,8 +117,8 @@ export default function ReviewPage() {
     return (
       <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
         <Navbar />
-        <Section style={{ paddingTop: 100, textAlign: "center" }}>
-          <p style={{ color: C.t3 }}>Loading...</p>
+        <Section style={{ paddingTop: 100 }}>
+          <Loading />
         </Section>
       </div>
     );
