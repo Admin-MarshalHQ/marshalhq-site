@@ -6,14 +6,17 @@ import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import JobCard from "../../components/JobCard";
 import { Section, SectionLabel, SectionTitle } from "../../components/ui/Section";
+import { Loading, Empty, ErrorState } from "../../components/StateView";
 
 export default function MarshalDashboard() {
   const { user, profile } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [myApps, setMyApps] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [tab, setTab] = useState("jobs");
-  const [filters, setFilters] = useState({ search: "", minRate: "", dateFrom: "", dateTo: "" });
+  const [filters, setFilters] = useState({ search: "", minRate: "", dateFrom: "", dateTo: "", nearMe: false });
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -23,6 +26,7 @@ export default function MarshalDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(null);
 
     try {
       // Fetch live jobs
@@ -33,7 +37,7 @@ export default function MarshalDashboard() {
         .order("is_urgent", { ascending: false })
         .order("created_at", { ascending: false });
 
-      if (jobError) console.error("Error fetching jobs:", jobError.message);
+      if (jobError) throw jobError;
       setJobs(jobData || []);
 
       // Fetch my applications with job data
@@ -43,10 +47,34 @@ export default function MarshalDashboard() {
         .eq("applicant_id", user.id)
         .order("applied_at", { ascending: false });
 
-      if (appError) console.error("Error fetching applications:", appError.message);
+      if (appError) throw appError;
       setMyApps(appData || []);
+
+      // Pending reviews: accepted on a completed job where I haven't yet reviewed the manager.
+      const completedAccepted = (appData || []).filter(
+        (a) => a.status === "accepted" && a.jobs?.status === "completed"
+      );
+      if (completedAccepted.length > 0) {
+        const jobIds = completedAccepted.map((a) => a.job_id);
+        const { data: myReviews } = await supabase
+          .from("reviews")
+          .select("job_id, reviewed_user_id")
+          .eq("reviewer_id", user.id)
+          .in("job_id", jobIds);
+        const reviewed = new Set(
+          (myReviews || []).map((r) => `${r.job_id}:${r.reviewed_user_id}`)
+        );
+        setPendingReviews(
+          completedAccepted.filter(
+            (a) => !reviewed.has(`${a.job_id}:${a.jobs?.posted_by}`)
+          )
+        );
+      } else {
+        setPendingReviews([]);
+      }
     } catch (err) {
       console.error("Dashboard fetch error:", err);
+      setLoadError(err?.message || "Could not load your dashboard.");
     }
 
     setLoading(false);
@@ -58,7 +86,15 @@ export default function MarshalDashboard() {
   const statusColors = { pending: C.orange, accepted: C.green, declined: C.red, withdrawn: C.t4 };
   const activeApps = myApps.filter((a) => a.status !== "withdrawn");
 
-  const hasFilters = filters.search || filters.minRate || filters.dateFrom || filters.dateTo;
+  const hasFilters =
+    filters.search || filters.minRate || filters.dateFrom || filters.dateTo || filters.nearMe;
+
+  const myLocationTokens = (profile?.location || "")
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 3);
+
   const filteredJobs = jobs.filter((j) => {
     if (filters.search) {
       const q = filters.search.toLowerCase();
@@ -71,6 +107,11 @@ export default function MarshalDashboard() {
     if (filters.minRate && j.day_rate < Number(filters.minRate)) return false;
     if (filters.dateFrom && j.date < filters.dateFrom) return false;
     if (filters.dateTo && j.date > filters.dateTo) return false;
+    if (filters.nearMe) {
+      if (myLocationTokens.length === 0) return false;
+      const loc = (j.location || "").toLowerCase();
+      if (!myLocationTokens.some((t) => loc.includes(t))) return false;
+    }
     return true;
   });
 
@@ -113,6 +154,51 @@ export default function MarshalDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Pending reviews strip */}
+        {pendingReviews.length > 0 && (
+          <div
+            style={{
+              background: C.accent + "10",
+              border: "1px solid " + C.accent + "44",
+              borderRadius: 14,
+              padding: "14px 18px",
+              marginBottom: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.accent, marginBottom: 2 }}>
+                {pendingReviews.length === 1
+                  ? "1 review waiting"
+                  : `${pendingReviews.length} reviews waiting`}
+              </div>
+              <div style={{ fontSize: 12, color: C.t3 }}>
+                Rate the {pendingReviews.length === 1 ? "manager" : "managers"} you worked with.
+              </div>
+            </div>
+            <Link
+              to={`/review/${pendingReviews[0].job_id}/${pendingReviews[0].jobs?.posted_by}`}
+              style={{
+                padding: "10px 20px",
+                background: C.accent,
+                color: C.bg,
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                textDecoration: "none",
+                letterSpacing: 0.5,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Leave review
+            </Link>
+          </div>
+        )}
 
         {/* Tabs */}
         <div
@@ -259,9 +345,35 @@ export default function MarshalDashboard() {
                     }}
                   />
                 </div>
+                <label
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 13,
+                    color: filters.nearMe ? C.accent : C.t3,
+                    cursor: profile?.location ? "pointer" : "not-allowed",
+                    userSelect: "none",
+                  }}
+                  title={
+                    profile?.location
+                      ? `Filter to jobs whose location mentions "${profile.location}"`
+                      : "Set a location on your profile to use this filter"
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    checked={filters.nearMe}
+                    disabled={!profile?.location}
+                    onChange={(e) => setFilters((f) => ({ ...f, nearMe: e.target.checked }))}
+                    style={{ accentColor: C.accent, cursor: "inherit" }}
+                  />
+                  Near me{profile?.location ? ` (${profile.location})` : ""}
+                </label>
                 {hasFilters && (
                   <button
-                    onClick={() => setFilters({ search: "", minRate: "", dateFrom: "", dateTo: "" })}
+                    onClick={() => setFilters({ search: "", minRate: "", dateFrom: "", dateTo: "", nearMe: false })}
                     style={{
                       background: "none",
                       border: "none",
@@ -283,26 +395,20 @@ export default function MarshalDashboard() {
         )}
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading...</div>
+          <Loading />
+        ) : loadError ? (
+          <ErrorState message={loadError} onRetry={fetchData} />
         ) : tab === "jobs" ? (
           <>
             {filteredJobs.length === 0 ? (
-              <div
-                style={{
-                  padding: 40,
-                  background: C.s2,
-                  borderRadius: 20,
-                  border: "1px solid " + C.b1,
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>
-                  {hasFilters ? "No jobs match your filters" : "No jobs posted yet"}
-                </div>
-                <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
-                  {hasFilters ? "Try adjusting your search criteria." : "New jobs will appear here as managers post them."}
-                </p>
-              </div>
+              <Empty
+                title={hasFilters ? "No jobs match your filters" : "No jobs posted yet"}
+                hint={
+                  hasFilters
+                    ? "Try adjusting your search criteria."
+                    : "New jobs will appear here as managers post them."
+                }
+              />
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {filteredJobs.map((job) => (
@@ -314,20 +420,10 @@ export default function MarshalDashboard() {
         ) : (
           <>
             {activeApps.length === 0 ? (
-              <div
-                style={{
-                  padding: 40,
-                  background: C.s2,
-                  borderRadius: 20,
-                  border: "1px solid " + C.b1,
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.t2 }}>No applications yet</div>
-                <p style={{ fontSize: 13, color: C.t4, marginTop: 6 }}>
-                  Apply to jobs from the Available Jobs tab.
-                </p>
-              </div>
+              <Empty
+                title="No applications yet"
+                hint="Apply to jobs from the Available Jobs tab."
+              />
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {activeApps.map((app) => (
