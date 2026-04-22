@@ -36,8 +36,11 @@ export default function ManagerDashboard() {
     setLoading(false);
   };
 
-  const liveJobs = jobs.filter((j) => j.status === "live");
-  const pastJobs = jobs.filter((j) => ["filled", "completed", "cancelled"].includes(j.status));
+  const openJobs = jobs.filter((j) => j.status === "live");
+  const filledJobs = jobs.filter((j) => j.status === "filled");
+  const activeJobs = jobs.filter((j) => ["live", "filled"].includes(j.status));
+  const completedJobs = jobs.filter((j) => j.status === "completed");
+  const pastJobs = jobs.filter((j) => ["completed", "cancelled"].includes(j.status));
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
@@ -81,9 +84,9 @@ export default function ManagerDashboard() {
           }}
         >
           {[
-            { title: "Active Jobs", value: liveJobs.length, color: C.accent },
+            { title: "Active Jobs", value: activeJobs.length, color: C.accent },
             { title: "Total Posted", value: jobs.length, color: C.orange },
-            { title: "Completed", value: pastJobs.length, color: C.green },
+            { title: "Completed", value: completedJobs.length, color: C.green },
           ].map((card, i) => (
             <div
               key={i}
@@ -141,17 +144,35 @@ export default function ManagerDashboard() {
           </div>
         ) : (
           <>
-            {liveJobs.length > 0 && (
+            {openJobs.length > 0 && (
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
-                  Active Jobs
+                  Open Jobs
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {liveJobs.map((job) => (
+                  {openJobs.map((job) => (
                     <JobCard
                       key={job.id}
                       job={job}
                       linkTo={`/manager/job/${job.id}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filledJobs.length > 0 && (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.orange, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 12 }}>
+                  Filled Jobs
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {filledJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      linkTo={`/manager/job/${job.id}`}
+                      showSlots={false}
                     />
                   ))}
                 </div>

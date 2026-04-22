@@ -1,7 +1,16 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { C } from "../../lib/theme";
 import { useAuth } from "../../lib/AuthContext";
+import {
+  acceptApplication,
+  cancelJob,
+  completeJob,
+  declineApplication,
+  fetchJobApplicantContacts,
+  fetchPublicProfiles,
+  mapRowsById,
+} from "../../lib/api";
 import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import { Section, SectionLabel, SectionTitle } from "../../components/ui/Section";
@@ -13,16 +22,20 @@ export default function JobApplicants() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!user) return;
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
   const fetchData = async () => {
+    if (!user) return;
+
     setLoading(true);
+    setError(null);
 
     try {
-      // Fetch job
       const { data: jobData, error: jobError } = await supabase
         .from("jobs")
         .select("*")
@@ -31,86 +44,107 @@ export default function JobApplicants() {
         .single();
 
       if (jobError || !jobData) {
-        console.error("Error fetching job:", jobError?.message);
+        setJob(null);
+        setApplicants([]);
         setLoading(false);
         return;
       }
+
       setJob(jobData);
 
-      // Fetch applications with applicant profiles (public fields only)
       const { data: apps, error: appsError } = await supabase
         .from("applications")
-        .select("*, profiles:applicant_id(full_name, location, avg_rating, total_jobs, reliability_pct, has_sia, has_cscs, has_first_aid, has_own_transport, day_rate_min, day_rate_max)")
+        .select("id, job_id, applicant_id, status, message, applied_at")
         .eq("job_id", id)
         .order("applied_at", { ascending: true });
 
-      if (appsError) console.error("Error fetching applicants:", appsError.message);
-
-      // Fetch contact info only for accepted applicants
-      const accepted = (apps || []).filter((a) => a.status === "accepted");
-      if (accepted.length > 0) {
-        const ids = accepted.map((a) => a.applicant_id);
-        const { data: contacts } = await supabase
-          .from("profiles")
-          .select("id, phone, email")
-          .in("id", ids);
-        const contactMap = {};
-        (contacts || []).forEach((c) => { contactMap[c.id] = c; });
-        (apps || []).forEach((a) => {
-          if (contactMap[a.applicant_id]) {
-            a.profiles = { ...a.profiles, ...contactMap[a.applicant_id] };
-          }
-        });
+      if (appsError) {
+        throw appsError;
       }
-      setApplicants(apps || []);
+
+      const applicantIds = (apps || []).map((app) => app.applicant_id);
+      const { data: publicProfiles, error: profileError } = await fetchPublicProfiles(applicantIds);
+
+      if (profileError) {
+        console.error("Error fetching applicant public profiles:", profileError.message);
+      }
+
+      const { data: contacts, error: contactError } = await fetchJobApplicantContacts(id);
+
+      if (contactError) {
+        console.error("Error fetching applicant contacts:", contactError.message);
+      }
+
+      const profileMap = mapRowsById(publicProfiles || []);
+      const contactMap = mapRowsById(contacts || []);
+
+      setApplicants(
+        (apps || []).map((app) => ({
+          ...app,
+          profile: {
+            ...(profileMap[app.applicant_id] || {}),
+            ...(contactMap[app.applicant_id] || {}),
+          },
+        }))
+      );
     } catch (err) {
       console.error("Job applicants fetch error:", err);
+      setError(err.message || "Could not load applicants.");
     }
 
     setLoading(false);
   };
 
-  const updateStatus = async (applicationId, newStatus) => {
+  const handleApplicationAction = async (applicationId, newStatus) => {
     setUpdating(applicationId);
+    setError(null);
 
-    // Re-fetch job to get latest slots_filled (prevents race condition)
-    if (newStatus === "accepted") {
-      const { data: freshJob } = await supabase
-        .from("jobs")
-        .select("slots_filled, slots_needed")
-        .eq("id", id)
-        .single();
+    const action = newStatus === "accepted" ? acceptApplication : declineApplication;
+    const { error: actionError } = await action(applicationId);
 
-      if (freshJob && freshJob.slots_filled >= freshJob.slots_needed) {
-        setUpdating(null);
-        alert("All slots have already been filled.");
-        await fetchData(); // refresh to show updated state
-        return;
-      }
+    if (actionError) {
+      setError(actionError.message);
+      setUpdating(null);
+      return;
     }
 
-    const { error } = await supabase
-      .from("applications")
-      .update({ status: newStatus })
-      .eq("id", applicationId);
+    await fetchData();
+    setUpdating(null);
+  };
 
-    if (!error) {
-      // Update local state
-      setApplicants((prev) =>
-        prev.map((a) => (a.id === applicationId ? { ...a, status: newStatus } : a))
-      );
+  const handleCancelJob = async () => {
+    if (!window.confirm("Cancel this job? Marshals will no longer be able to apply.")) return;
 
-      // If accepting, increment slots_filled
-      if (newStatus === "accepted") {
-        const newFilled = (job.slots_filled || 0) + 1;
-        await supabase
-          .from("jobs")
-          .update({ slots_filled: newFilled })
-          .eq("id", id);
-        setJob((prev) => ({ ...prev, slots_filled: newFilled }));
-      }
+    setUpdating("cancel-job");
+    setError(null);
+
+    const { error: cancelError } = await cancelJob(id);
+
+    if (cancelError) {
+      setError(cancelError.message);
+      setUpdating(null);
+      return;
     }
 
+    await fetchData();
+    setUpdating(null);
+  };
+
+  const handleCompleteJob = async () => {
+    if (!window.confirm("Mark this job as completed?")) return;
+
+    setUpdating("complete-job");
+    setError(null);
+
+    const { error: completeError } = await completeJob(id);
+
+    if (completeError) {
+      setError(completeError.message);
+      setUpdating(null);
+      return;
+    }
+
+    await fetchData();
     setUpdating(null);
   };
 
@@ -160,6 +194,10 @@ export default function JobApplicants() {
   const slotsRemaining = job.slots_needed - job.slots_filled;
   const pendingCount = applicants.filter((a) => a.status === "pending").length;
   const acceptedCount = applicants.filter((a) => a.status === "accepted").length;
+  const canCancelJob = !["completed", "cancelled"].includes(job.status);
+  const canCompleteJob = ["live", "filled"].includes(job.status) && acceptedCount > 0;
+  const statusTone =
+    job.status === "completed" ? C.green : job.status === "cancelled" ? C.red : C.orange;
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", color: C.t1 }}>
@@ -172,7 +210,6 @@ export default function JobApplicants() {
           &larr; Back to Dashboard
         </Link>
 
-        {/* Job summary */}
         <div style={{ marginBottom: 32 }}>
           <SectionLabel>Applicants</SectionLabel>
           <SectionTitle>{job.title}</SectionTitle>
@@ -196,13 +233,10 @@ export default function JobApplicants() {
                 Edit Job
               </Link>
             )}
-            {job.status === "live" && (
+            {canCancelJob && (
               <button
-                onClick={async () => {
-                  if (!window.confirm("Cancel this job? This cannot be undone.")) return;
-                  await supabase.from("jobs").update({ status: "cancelled" }).eq("id", id);
-                  setJob((prev) => ({ ...prev, status: "cancelled" }));
-                }}
+                onClick={handleCancelJob}
+                disabled={updating === "cancel-job"}
                 style={{
                   background: "none",
                   border: "none",
@@ -212,18 +246,16 @@ export default function JobApplicants() {
                   cursor: "pointer",
                   fontFamily: "inherit",
                   padding: 0,
+                  opacity: updating === "cancel-job" ? 0.6 : 1,
                 }}
               >
                 Cancel Job
               </button>
             )}
-            {job.status === "live" && acceptedCount > 0 && (
+            {canCompleteJob && (
               <button
-                onClick={async () => {
-                  if (!window.confirm("Mark this job as completed?")) return;
-                  await supabase.from("jobs").update({ status: "completed" }).eq("id", id);
-                  setJob((prev) => ({ ...prev, status: "completed" }));
-                }}
+                onClick={handleCompleteJob}
+                disabled={updating === "complete-job"}
                 style={{
                   background: "none",
                   border: "none",
@@ -233,6 +265,7 @@ export default function JobApplicants() {
                   cursor: "pointer",
                   fontFamily: "inherit",
                   padding: 0,
+                  opacity: updating === "complete-job" ? 0.6 : 1,
                 }}
               >
                 Mark Complete
@@ -240,7 +273,6 @@ export default function JobApplicants() {
             )}
           </div>
 
-          {/* Status badge for non-live jobs */}
           {job.status !== "live" && (
             <div
               style={{
@@ -251,8 +283,8 @@ export default function JobApplicants() {
                 fontSize: 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
-                background: job.status === "completed" ? C.green + "18" : job.status === "cancelled" ? C.red + "18" : C.t4 + "18",
-                color: job.status === "completed" ? C.green : job.status === "cancelled" ? C.red : C.t4,
+                background: statusTone + "18",
+                color: statusTone,
               }}
             >
               {job.status}
@@ -260,8 +292,24 @@ export default function JobApplicants() {
           )}
         </div>
 
-        {/* Stats bar */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+        {error && (
+          <div
+            style={{
+              padding: "10px 14px",
+              background: "#ef444415",
+              border: "1px solid #ef444433",
+              borderRadius: 10,
+              marginBottom: 16,
+              fontSize: 13,
+              color: C.red,
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
           <div style={{ background: C.s2, borderRadius: 12, padding: "12px 20px", border: "1px solid " + C.b1, textAlign: "center" }}>
             <div style={{ fontSize: 24, fontWeight: 800, color: C.t1 }}>{applicants.length}</div>
             <div style={{ fontSize: 11, color: C.t4 }}>Total</div>
@@ -276,7 +324,6 @@ export default function JobApplicants() {
           </div>
         </div>
 
-        {/* Applicant list */}
         {applicants.length === 0 ? (
           <div
             style={{
@@ -295,9 +342,15 @@ export default function JobApplicants() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {applicants.map((app) => {
-              const p = app.profiles;
+              const p = app.profile;
               const statusColor =
-                app.status === "accepted" ? C.green : app.status === "declined" ? C.red : C.orange;
+                app.status === "accepted"
+                  ? C.green
+                  : app.status === "declined"
+                    ? C.red
+                    : app.status === "withdrawn"
+                      ? C.t4
+                      : C.orange;
 
               return (
                 <div
@@ -310,7 +363,6 @@ export default function JobApplicants() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: 16 }}>
-                    {/* Applicant info */}
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                         <div style={{ fontSize: 18, fontWeight: 700, color: C.t1 }}>
@@ -345,12 +397,13 @@ export default function JobApplicants() {
                         )}
                         {p?.total_jobs > 0 && (
                           <span style={{ fontSize: 12, color: C.t3 }}>
-                            {p.total_jobs} jobs done
+                            {p.total_jobs} jobs reviewed
                           </span>
                         )}
-                        {p?.reliability_pct > 0 && (
+                        {(p?.day_rate_min || p?.day_rate_max) && (
                           <span style={{ fontSize: 12, color: C.t3 }}>
-                            {p.reliability_pct}% reliable
+                            &pound;{p.day_rate_min || 0}
+                            {p.day_rate_max ? `-${p.day_rate_max}` : ""} expected
                           </span>
                         )}
                       </div>
@@ -407,30 +460,31 @@ export default function JobApplicants() {
                       )}
                     </div>
 
-                    {/* Action buttons */}
                     <div style={{ display: "flex", gap: 8, flexShrink: 0, flexDirection: "column", alignItems: "flex-end" }}>
-                      {app.status === "pending" && slotsRemaining > 0 && (
+                      {app.status === "pending" && !["completed", "cancelled"].includes(job.status) && (
                         <div style={{ display: "flex", gap: 8 }}>
+                          {job.status === "live" && slotsRemaining > 0 && (
+                            <button
+                              onClick={() => handleApplicationAction(app.id, "accepted")}
+                              disabled={updating === app.id}
+                              style={{
+                                padding: "10px 20px",
+                                background: C.green,
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 10,
+                                fontSize: 13,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                fontFamily: "inherit",
+                                opacity: updating === app.id ? 0.6 : 1,
+                              }}
+                            >
+                              Accept
+                            </button>
+                          )}
                           <button
-                            onClick={() => updateStatus(app.id, "accepted")}
-                            disabled={updating === app.id}
-                            style={{
-                              padding: "10px 20px",
-                              background: C.green,
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 10,
-                              fontSize: 13,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                              opacity: updating === app.id ? 0.6 : 1,
-                            }}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => updateStatus(app.id, "declined")}
+                            onClick={() => handleApplicationAction(app.id, "declined")}
                             disabled={updating === app.id}
                             style={{
                               padding: "10px 20px",

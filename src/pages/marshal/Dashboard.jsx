@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { C } from "../../lib/theme";
 import { useAuth } from "../../lib/AuthContext";
+import { fetchPublicProfiles, mapRowsById } from "../../lib/api";
 import { supabase } from "../../lib/supabase";
 import Navbar from "../../components/Navbar";
 import JobCard from "../../components/JobCard";
@@ -34,7 +35,19 @@ export default function MarshalDashboard() {
         .order("created_at", { ascending: false });
 
       if (jobError) console.error("Error fetching jobs:", jobError.message);
-      setJobs(jobData || []);
+
+      const posterIds = (jobData || []).map((job) => job.posted_by);
+      const { data: posterProfiles, error: profileError } = await fetchPublicProfiles(posterIds);
+
+      if (profileError) console.error("Error fetching public profiles:", profileError.message);
+
+      const posterMap = mapRowsById(posterProfiles || []);
+      setJobs(
+        (jobData || []).map((job) => ({
+          ...job,
+          poster_profile: posterMap[job.posted_by] || null,
+        }))
+      );
 
       // Fetch my applications with job data
       const { data: appData, error: appError } = await supabase

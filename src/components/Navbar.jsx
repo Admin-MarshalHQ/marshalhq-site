@@ -88,6 +88,24 @@ export default function Navbar() {
                   Profile
                 </Link>
               )}
+              {profile?.role === "manager" && (
+                <Link
+                  to="/manager/profile"
+                  style={{
+                    color: C.t3,
+                    textDecoration: "none",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    transition: "color .2s",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.color = C.t1)}
+                  onMouseLeave={(e) => (e.target.style.color = C.t3)}
+                >
+                  Settings
+                </Link>
+              )}
               <button
                 onClick={handleSignOut}
                 style={{

@@ -3,11 +3,14 @@ import { C } from "../lib/theme";
 
 export default function JobCard({ job, linkTo, showSlots = true }) {
   const slotsRemaining = job.slots_needed - job.slots_filled;
+  const poster = job.poster_profile;
   const dateFormatted = new Date(job.date + "T00:00:00").toLocaleDateString("en-GB", {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
+  const statusTone =
+    job.status === "completed" ? C.green : job.status === "cancelled" ? C.red : C.orange;
 
   return (
     <Link to={linkTo} style={{ textDecoration: "none" }}>
@@ -55,6 +58,22 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
                   {job.production_name}
                 </span>
               )}
+              {job.status !== "live" && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "2px 7px",
+                    borderRadius: 6,
+                    background: statusTone + "18",
+                    color: statusTone,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {job.status}
+                </span>
+              )}
             </div>
             <div style={{ fontSize: 16, fontWeight: 700, color: C.t1, letterSpacing: -0.2 }}>{job.title}</div>
           </div>
@@ -86,6 +105,13 @@ export default function JobCard({ job, linkTo, showSlots = true }) {
             </>
           )}
         </div>
+
+        {poster && (
+          <div style={{ marginTop: 12, fontSize: 12, color: C.t4 }}>
+            Posted by {poster.full_name || "Unknown manager"}
+            {poster.avg_rating > 0 && ` · ${poster.avg_rating}★ manager rating`}
+          </div>
+        )}
       </div>
     </Link>
   );

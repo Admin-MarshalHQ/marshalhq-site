@@ -12,6 +12,7 @@ import PostJob from "./pages/manager/PostJob";
 import JobApplicants from "./pages/manager/JobApplicants";
 import JobDetail from "./pages/JobDetail";
 import MarshalProfile from "./pages/marshal/Profile";
+import ManagerProfile from "./pages/manager/Profile";
 import ReviewPage from "./pages/ReviewPage";
 import NotFound from "./pages/NotFound";
 import LandingNavbar from "./components/LandingNavbar";
@@ -128,6 +129,14 @@ export default function App() {
                     element={
                       <ProtectedRoute role="manager">
                         <PostJob />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/manager/profile"
+                    element={
+                      <ProtectedRoute role="manager">
+                        <ManagerProfile />
                       </ProtectedRoute>
                     }
                   />

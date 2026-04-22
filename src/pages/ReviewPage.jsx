@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { C } from "../lib/theme";
 import { useAuth } from "../lib/AuthContext";
+import { fetchPublicProfile } from "../lib/api";
 import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 import { Section, SectionLabel, SectionTitle } from "../components/ui/Section";
@@ -26,11 +27,7 @@ export default function ReviewPage() {
   useEffect(() => {
     (async () => {
       // Fetch target user name
-      const { data: targetProfile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", userId)
-        .single();
+      const { data: targetProfile } = await fetchPublicProfile(userId);
       setTargetName(targetProfile?.full_name || "Unknown");
 
       // Fetch job title
@@ -48,7 +45,7 @@ export default function ReviewPage() {
         .eq("reviewer_id", user.id)
         .eq("reviewed_user_id", userId)
         .eq("job_id", jobId)
-        .single();
+        .maybeSingle();
 
       if (existing) setAlreadyReviewed(true);
       setLoading(false);
@@ -78,23 +75,6 @@ export default function ReviewPage() {
       setError(insertErr.message);
       setSubmitting(false);
       return;
-    }
-
-    // Update the reviewed user's avg_rating and total_jobs
-    const { data: allReviews } = await supabase
-      .from("reviews")
-      .select("rating")
-      .eq("reviewed_user_id", userId);
-
-    if (allReviews && allReviews.length > 0) {
-      const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-      await supabase
-        .from("profiles")
-        .update({
-          avg_rating: Math.round(avg * 100) / 100,
-          total_jobs: allReviews.length,
-        })
-        .eq("id", userId);
     }
 
     setSubmitting(false);

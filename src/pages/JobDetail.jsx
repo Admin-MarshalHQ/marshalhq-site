@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { C } from "../lib/theme";
 import { useAuth } from "../lib/AuthContext";
+import {
+  fetchJobManagerContact,
+  fetchPublicProfile,
+  withdrawApplication,
+} from "../lib/api";
 import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 import { Section, SectionLabel } from "../components/ui/Section";
@@ -21,10 +26,14 @@ export default function JobDetail() {
 
   useEffect(() => {
     fetchJob();
-  }, [id]);
+  }, [id, user]);
 
   const fetchJob = async () => {
     setLoading(true);
+    setError(null);
+    setPoster(null);
+    setApplied(false);
+    setApplicationStatus(null);
 
     // Fetch job
     const { data: jobData, error: jobError } = await supabase
@@ -41,11 +50,7 @@ export default function JobDetail() {
     setJob(jobData);
 
     // Fetch poster profile (public fields only)
-    const { data: posterData } = await supabase
-      .from("profiles")
-      .select("full_name, avg_rating, total_jobs")
-      .eq("id", jobData.posted_by)
-      .single();
+    const { data: posterData } = await fetchPublicProfile(jobData.posted_by);
     setPoster(posterData);
 
     // Check if current user already applied
@@ -55,7 +60,7 @@ export default function JobDetail() {
         .select("status")
         .eq("job_id", id)
         .eq("applicant_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (appData) {
         setApplied(true);
@@ -63,11 +68,7 @@ export default function JobDetail() {
 
         // Only fetch poster contact info if accepted
         if (appData.status === "accepted") {
-          const { data: contactData } = await supabase
-            .from("profiles")
-            .select("phone, email")
-            .eq("id", jobData.posted_by)
-            .single();
+          const { data: contactData } = await fetchJobManagerContact(jobData.id);
           if (contactData) {
             setPoster((prev) => ({ ...prev, ...contactData }));
           }
@@ -142,16 +143,14 @@ export default function JobDetail() {
 
   const handleWithdraw = async () => {
     if (!window.confirm("Withdraw your application?")) return;
-    const { error: wErr } = await supabase
-      .from("applications")
-      .update({ status: "withdrawn" })
-      .eq("job_id", id)
-      .eq("applicant_id", user.id);
+    const { error: wErr } = await withdrawApplication(id);
     if (!wErr) {
-      setApplied(false);
-      setApplicationStatus(null);
+      setApplied(true);
+      setApplicationStatus("withdrawn");
       setMessage("");
       setShowMessage(false);
+    } else {
+      setError(wErr.message);
     }
   };
 
@@ -224,7 +223,14 @@ export default function JobDetail() {
             { label: "Time", value: `${job.start_time} \u2013 ${job.end_time}`, icon: "\u23f0" },
             { label: "Day Rate", value: `\u00a3${job.day_rate}`, icon: "\ud83d\udcb7" },
             { label: "Slots", value: `${slotsRemaining} of ${job.slots_needed} remaining`, icon: "\ud83d\udc65" },
-            { label: "Posted by", value: poster?.full_name || "Unknown", icon: "\ud83c\udfac" },
+            {
+              label: "Posted by",
+              value:
+                poster?.avg_rating > 0
+                  ? `${poster.full_name} · ${poster.avg_rating}★`
+                  : poster?.full_name || "Unknown",
+              icon: "\ud83c\udfac",
+            },
           ].map((item, i) => (
             <div
               key={i}
@@ -291,7 +297,7 @@ export default function JobDetail() {
         )}
 
         {/* Apply button (marshal only) */}
-        {profile?.role === "marshal" && job.status === "live" && (
+        {profile?.role === "marshal" && (job.status === "live" || applied) && (
           <div style={{ marginBottom: 40 }}>
             {applied ? (
               <div
@@ -307,11 +313,13 @@ export default function JobDetail() {
                   {applicationStatus === "pending" && "Application Submitted"}
                   {applicationStatus === "accepted" && "You\u2019re Booked!"}
                   {applicationStatus === "declined" && "Application Declined"}
+                  {applicationStatus === "withdrawn" && "Application Withdrawn"}
                 </div>
                 <div style={{ fontSize: 13, color: C.t3 }}>
                   {applicationStatus === "pending" && "The manager will review your application shortly."}
                   {applicationStatus === "accepted" && "You\u2019ve been accepted for this job."}
                   {applicationStatus === "declined" && "Unfortunately, the manager chose other applicants for this job."}
+                  {applicationStatus === "withdrawn" && "You withdrew this application and won\u2019t be considered for this posting."}
                 </div>
                 {applicationStatus === "accepted" && (poster?.phone || poster?.email) && (
                   <div
