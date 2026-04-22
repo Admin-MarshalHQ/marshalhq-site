@@ -5,7 +5,6 @@ import { C, FONT } from "../lib/theme";
 export default function ProtectedRoute({ children, role }) {
   const { user, profile, loading } = useAuth();
 
-  // Auth is still loading
   if (loading) {
     return (
       <div
@@ -25,32 +24,14 @@ export default function ProtectedRoute({ children, role }) {
     );
   }
 
-  // Not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // User exists but profile hasn't loaded yet — wait
   if (!profile) {
-    return (
-      <div
-        style={{
-          minHeight: "100dvh",
-          background: C.bg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: FONT,
-          color: C.t3,
-          fontSize: 14,
-        }}
-      >
-        Loading...
-      </div>
-    );
+    return <Navigate to="/login?mode=signup" replace />;
   }
 
-  // Wrong role — redirect to the correct dashboard
   if (role && profile.role !== role) {
     const redirect = profile.role === "manager" ? "/manager/dashboard" : "/marshal/dashboard";
     return <Navigate to={redirect} replace />;

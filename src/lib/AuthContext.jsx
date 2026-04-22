@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
 const AuthContext = createContext({});
@@ -9,77 +9,123 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (authUser) => {
-    // authUser can be a userId string or a full user object
     const userId = typeof authUser === "string" ? authUser : authUser?.id;
-    if (!userId) return;
+
+    if (!userId) {
+      setProfile(null);
+      return null;
+    }
 
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
-    if (data) {
-      setProfile(data);
-      return;
+    if (error) {
+      console.error("Failed to fetch profile:", error.message);
+      setProfile(null);
+      return null;
     }
 
-    // Profile doesn't exist — auto-create from user metadata
-    console.warn("Profile not found, creating one...", error?.message);
-    const fullUser = typeof authUser === "object" ? authUser : null;
-    const meta = fullUser?.user_metadata || {};
+    const isCompleteProfile = Boolean(
+      data &&
+      (data.role === "marshal" || data.role === "manager") &&
+      data.full_name?.trim() &&
+      data.email?.trim()
+    );
 
-    const { data: newProfile, error: insertError } = await supabase
-      .from("profiles")
-      .insert({
-        id: userId,
-        role: meta.role || "marshal",
-        full_name: meta.full_name || fullUser?.email || "",
-        email: fullUser?.email || "",
-      })
-      .select()
-      .single();
-
-    if (newProfile) {
-      setProfile(newProfile);
-    } else {
-      console.error("Failed to create profile:", insertError?.message);
-      // Set a minimal fallback so the app doesn't get stuck
-      setProfile({
-        id: userId,
-        role: meta.role || "marshal",
-        full_name: meta.full_name || "",
-      });
+    if (!isCompleteProfile) {
+      setProfile(null);
+      return null;
     }
+
+    setProfile(data);
+    return data;
   };
 
   useEffect(() => {
-    // Check current session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      if (currentUser) {
-        await fetchProfile(currentUser);
-      }
-      setLoading(false);
-    });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
       if (currentUser) {
         await fetchProfile(currentUser);
       } else {
         setProfile(null);
       }
+
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        await fetchProfile(currentUser);
+      } else {
+        setProfile(null);
+      }
+
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const completeProfile = async ({ role, fullName }, authUser = user) => {
+    const currentUser = authUser ?? user;
+    const trimmedName = fullName?.trim() || "";
+
+    if (!currentUser?.id) {
+      return { error: new Error("You must be signed in before completing signup.") };
+    }
+
+    if (!role) {
+      return { error: new Error("Please select your role.") };
+    }
+
+    if (!trimmedName) {
+      return { error: new Error("Please enter your full name.") };
+    }
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session?.access_token) {
+      return {
+        error: sessionError || new Error("You must be signed in before completing signup."),
+      };
+    }
+
+    const response = await fetch("/api/profile/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        role,
+        fullName: trimmedName,
+      }),
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        error: new Error(payload?.error || "Unable to complete profile right now."),
+      };
+    }
+
+    setProfile(payload.profile);
+    return { data: payload.profile };
+  };
 
   const signUp = async (email, password, role, fullName) => {
     const { data, error } = await supabase.auth.signUp({
@@ -89,10 +135,12 @@ export function AuthProvider({ children }) {
         data: { role, full_name: fullName },
       },
     });
+
     if (error) return { error };
 
-    if (data.user) {
-      await fetchProfile(data.user);
+    if (data.session && data.user) {
+      const { error: profileError } = await completeProfile({ role, fullName }, data.user);
+      if (profileError) return { error: profileError };
     }
 
     return { data };
@@ -103,6 +151,28 @@ export function AuthProvider({ children }) {
       email,
       password,
     });
+
+    if (error) return { error };
+    return { data };
+  };
+
+  const signInWithGoogle = async ({ mode } = {}) => {
+    const authMode = mode === "signup" ? "signup" : "login";
+    const redirectTo = `${window.location.origin}/login?mode=${authMode}&oauth=google`;
+
+    // Clear any persisted app session so the next OAuth return is a clean handoff.
+    await supabase.auth.signOut({ scope: "local" });
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+
     if (error) return { error };
     return { data };
   };
@@ -115,7 +185,17 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}
+      value={{
+        user,
+        profile,
+        loading,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        signOut,
+        fetchProfile,
+        completeProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>
