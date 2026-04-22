@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { C, FONT, FONT_DISPLAY } from "../lib/theme";
+import VersionBeacon from "../components/VersionBeacon";
 // FONT_DISPLAY used only for logo wordmark
 
 const ADMIN_PASSWORD = import.meta.env.VITE_DEV_PASSWORD || "marshalhq2026";
@@ -114,6 +115,7 @@ export default function GatePage({ onUnlock }) {
         </div>
         <div style={{ fontSize: 12, color: C.t4, marginTop: 20 }}>Authorised access only</div>
       </div>
+      <VersionBeacon />
     </div>
   );
 }

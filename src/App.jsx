@@ -17,6 +17,7 @@ import ReviewPage from "./pages/ReviewPage";
 import NotFound from "./pages/NotFound";
 import LandingNavbar from "./components/LandingNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import VersionBeacon from "./components/VersionBeacon";
 
 function AppLayout({ children }) {
   return (
@@ -50,6 +51,7 @@ function AppLayout({ children }) {
         ::-webkit-scrollbar-thumb:hover{background:${C.b2}}
       `}</style>
       {children}
+      <VersionBeacon />
     </div>
   );
 }
