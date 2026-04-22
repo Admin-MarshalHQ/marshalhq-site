@@ -133,18 +133,41 @@ drop policy if exists "Authenticated users can view live or related jobs" on job
 drop policy if exists "Managers can insert jobs" on jobs;
 drop policy if exists "Managers can update own jobs" on jobs;
 
+create or replace function has_applied_to_job(p_job_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from applications
+    where job_id = p_job_id
+      and applicant_id = auth.uid()
+  );
+$$;
+
+create or replace function is_job_owner(p_job_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from jobs
+    where id = p_job_id
+      and posted_by = auth.uid()
+  );
+$$;
+
 create policy "Authenticated users can view live or related jobs"
   on jobs for select
   to authenticated
   using (
     status = 'live'
     or posted_by = auth.uid()
-    or exists (
-      select 1
-      from applications
-      where applications.job_id = jobs.id
-        and applications.applicant_id = auth.uid()
-    )
+    or has_applied_to_job(id)
   );
 
 create policy "Managers can insert jobs"
@@ -176,12 +199,7 @@ create policy "Applicants can view own applications"
   to authenticated
   using (
     applicant_id = auth.uid()
-    or exists (
-      select 1
-      from jobs
-      where jobs.id = applications.job_id
-        and jobs.posted_by = auth.uid()
-    )
+    or is_job_owner(job_id)
   );
 
 create policy "Marshals can insert applications to open jobs"
@@ -589,6 +607,8 @@ revoke all on function cancel_job(uuid) from public;
 revoke all on function complete_job(uuid) from public;
 revoke all on function get_job_manager_contact(uuid) from public;
 revoke all on function get_job_applicant_contacts(uuid) from public;
+revoke all on function has_applied_to_job(uuid) from public;
+revoke all on function is_job_owner(uuid) from public;
 
 grant execute on function accept_application(uuid) to authenticated;
 grant execute on function decline_application(uuid) to authenticated;
@@ -597,3 +617,5 @@ grant execute on function cancel_job(uuid) to authenticated;
 grant execute on function complete_job(uuid) to authenticated;
 grant execute on function get_job_manager_contact(uuid) to authenticated;
 grant execute on function get_job_applicant_contacts(uuid) to authenticated;
+grant execute on function has_applied_to_job(uuid) to authenticated;
+grant execute on function is_job_owner(uuid) to authenticated;

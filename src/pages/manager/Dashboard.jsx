@@ -11,6 +11,7 @@ export default function ManagerDashboard() {
   const { user, profile } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchJobs();
@@ -19,6 +20,7 @@ export default function ManagerDashboard() {
   const fetchJobs = async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
 
     try {
       const { data, error } = await supabase
@@ -27,13 +29,21 @@ export default function ManagerDashboard() {
         .eq("posted_by", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) console.error("Error fetching jobs:", error.message);
+      if (error) {
+        console.error("Error fetching jobs:", error.message);
+        setJobs([]);
+        setError(error.message);
+        return;
+      }
+
       setJobs(data || []);
     } catch (err) {
       console.error("Manager dashboard fetch error:", err);
+      setJobs([]);
+      setError(err.message || "Unable to load your jobs right now.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const openJobs = jobs.filter((j) => j.status === "live");
@@ -108,6 +118,23 @@ export default function ManagerDashboard() {
         {/* Job list */}
         {loading ? (
           <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading...</div>
+        ) : error ? (
+          <div
+            style={{
+              padding: 24,
+              background: "#ef444415",
+              borderRadius: 20,
+              border: "1px solid #ef444433",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.red, marginBottom: 8 }}>
+              Unable to load jobs
+            </div>
+            <p style={{ fontSize: 14, color: C.t3, maxWidth: 460, margin: "0 auto" }}>
+              {error}
+            </p>
+          </div>
         ) : jobs.length === 0 ? (
           <div
             style={{

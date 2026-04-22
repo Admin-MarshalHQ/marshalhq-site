@@ -13,6 +13,7 @@ export default function MarshalDashboard() {
   const [jobs, setJobs] = useState([]);
   const [myApps, setMyApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [tab, setTab] = useState("jobs");
   const [filters, setFilters] = useState({ search: "", minRate: "", dateFrom: "", dateTo: "" });
   const [showFilters, setShowFilters] = useState(false);
@@ -24,6 +25,7 @@ export default function MarshalDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
 
     try {
       // Fetch live jobs
@@ -34,7 +36,13 @@ export default function MarshalDashboard() {
         .order("is_urgent", { ascending: false })
         .order("created_at", { ascending: false });
 
-      if (jobError) console.error("Error fetching jobs:", jobError.message);
+      if (jobError) {
+        console.error("Error fetching jobs:", jobError.message);
+        setJobs([]);
+        setMyApps([]);
+        setError(jobError.message);
+        return;
+      }
 
       const posterIds = (jobData || []).map((job) => job.posted_by);
       const { data: posterProfiles, error: profileError } = await fetchPublicProfiles(posterIds);
@@ -56,13 +64,21 @@ export default function MarshalDashboard() {
         .eq("applicant_id", user.id)
         .order("applied_at", { ascending: false });
 
-      if (appError) console.error("Error fetching applications:", appError.message);
+      if (appError) {
+        console.error("Error fetching applications:", appError.message);
+        setError(appError.message);
+        return;
+      }
+
       setMyApps(appData || []);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
+      setJobs([]);
+      setMyApps([]);
+      setError(err.message || "Unable to load dashboard data right now.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const pendingApps = myApps.filter((a) => a.status === "pending").length;
@@ -297,6 +313,23 @@ export default function MarshalDashboard() {
 
         {loading ? (
           <div style={{ textAlign: "center", padding: 40, color: C.t3 }}>Loading...</div>
+        ) : error ? (
+          <div
+            style={{
+              padding: 24,
+              background: "#ef444415",
+              borderRadius: 20,
+              border: "1px solid #ef444433",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.red, marginBottom: 8 }}>
+              Unable to load jobs
+            </div>
+            <p style={{ fontSize: 14, color: C.t3, maxWidth: 460, margin: "0 auto" }}>
+              {error}
+            </p>
+          </div>
         ) : tab === "jobs" ? (
           <>
             {filteredJobs.length === 0 ? (
